@@ -1,0 +1,11 @@
+Initial implementation of Text RPG game (V1)
+
+This commit includes:
+- Core game mechanics implementation (battles, loot, day/night cycle)
+- Web-based UI with Flask backend
+- Interactive frontend with keyboard shortcuts
+- Theme changes based on day/night cycle
+- Complete implementation of V1 requirements
+
+The game can now be played in a browser with a more user-friendly interface
+while maintaining all the core gameplay elements specified in the requirements.

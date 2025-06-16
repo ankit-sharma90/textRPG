@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text RPG</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="earth-theme">
+    <div class="container">
+        <header>
+            <h1>Text RPG</h1>
+        </header>
+        
+        <div class="game-container">
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="label">Health:</span>
+                    <span id="health">10/10</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Gold:</span>
+                    <span id="gold">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Time:</span>
+                    <span id="time">Day</span>
+                </div>
+                <div class="status-item" id="vampire-status" style="display: none;">
+                    <span class="label">Status:</span>
+                    <span>Vampire</span>
+                </div>
+            </div>
+            
+            <div class="game-content">
+                <div id="message-box">
+                    <p>Welcome to Text RPG! Click "Start Game" to begin your adventure.</p>
+                </div>
+                
+                <div id="enemy-info" style="display: none;">
+                    <h3>Enemy: <span id="enemy-name"></span></h3>
+                    <div class="health-bar">
+                        <div class="health-bar-fill" id="enemy-health-bar"></div>
+                    </div>
+                    <span id="enemy-health-text"></span>
+                </div>
+                
+                <div class="action-buttons" id="action-buttons">
+                    <button id="start-button" class="action-button">Start Game</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Text RPG Game - V1</p>
+            <p class="keyboard-hint">Tip: Use number keys (1-9) as shortcuts for actions</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>
