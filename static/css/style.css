@@ -136,6 +136,96 @@ header h1 {
     padding-left: 8px;
 }
 
+/* Success Screen Styles */
+.message-box.success-screen {
+    background-color: #1e2420;
+    border: 1px solid #60a060;
+    text-align: center;
+    padding: 15px;
+    animation: success-glow 2s infinite alternate;
+}
+
+.success-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #60a060;
+    margin-bottom: 15px;
+    text-shadow: 0 0 5px rgba(96, 160, 96, 0.5);
+}
+
+.success-message {
+    font-size: 1.2rem;
+    color: #d4d4d4;
+    margin-bottom: 15px;
+}
+
+.success-reward {
+    font-size: 1.1rem;
+    color: #c0a080;
+    margin: 15px 0;
+    font-weight: bold;
+}
+
+.gold-icon {
+    color: #ffd700;
+    margin-right: 5px;
+}
+
+.success-border {
+    color: #60a060;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+}
+
+@keyframes success-glow {
+    from {
+        box-shadow: 0 0 5px rgba(96, 160, 96, 0.2);
+    }
+    to {
+        box-shadow: 0 0 15px rgba(96, 160, 96, 0.5);
+    }
+}
+
+/* Defeated Screen Styles */
+.message-box.defeated-screen {
+    background-color: #241e1e;
+    border: 1px solid #c04040;
+    text-align: center;
+    padding: 15px;
+    animation: defeated-glow 2s infinite alternate;
+}
+
+.defeated-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #c04040;
+    margin-bottom: 15px;
+    text-shadow: 0 0 5px rgba(192, 64, 64, 0.5);
+}
+
+.defeated-message {
+    font-size: 1.2rem;
+    color: #d4d4d4;
+    margin-bottom: 15px;
+}
+
+.defeated-border {
+    color: #c04040;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+}
+
+@keyframes defeated-glow {
+    from {
+        box-shadow: 0 0 5px rgba(192, 64, 64, 0.2);
+    }
+    to {
+        box-shadow: 0 0 15px rgba(192, 64, 64, 0.5);
+    }
+}
+
 /* Enemy info */
 .battle-info {
     background-color: #2a2020;

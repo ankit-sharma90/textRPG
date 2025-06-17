@@ -126,73 +126,109 @@ function updateGameState(data) {
 
 // Process message based on event type
 function processMessage(message, event) {
-    const lines = message.split('\n');
-    
-    // Clear current message
-    clearCurrentMessage();
-    
     if (event === 'battle') {
-        // In battle mode, we want to show all battle-related messages in the battle log
-        // and only show non-battle messages in the current message area
+        // In battle mode, add all messages to the battle log
+        // and clear the current message area
         
-        // For battle events, we'll put battle messages in the battle log
-        // and only non-battle messages in the current message area
-        let nonBattleMessages = [];
-        let battleMessages = [];
+        const lines = message.split('\n');
         
+        // Add each line to the battle log
         lines.forEach(line => {
             if (line.trim()) {
-                // Check if this is a battle message
-                if (isBattleMessage(line)) {
-                    battleMessages.push(line);
-                } else {
-                    nonBattleMessages.push(line);
+                const p = document.createElement('p');
+                p.textContent = line;
+                battleLog.appendChild(p);
+            }
+        });
+        
+        // Keep only the last 2 messages in battle log
+        while (battleLog.children.length > 2) {
+            battleLog.removeChild(battleLog.firstChild);
+        }
+        
+        // Scroll battle log to bottom to show latest messages
+        battleLog.scrollTop = battleLog.scrollHeight;
+        
+        // Clear current message during battle
+        clearCurrentMessage();
+        
+        // Add a status message to current message area
+        const p = document.createElement('p');
+        p.textContent = "Battle in progress... Check the battle log above for details.";
+        currentMessage.appendChild(p);
+    } else if (gameState.event === 'battle' && event !== 'battle') {
+        // Battle just ended - show victory or defeat screen
+        clearCurrentMessage();
+        
+        // Extract non-battle messages
+        const lines = message.split('\n');
+        const nonBattleLines = [];
+        let defeatedMonster = "";
+        let killedBy = "";
+        let goldGained = 0;
+        let playerDefeated = false;
+        
+        lines.forEach(line => {
+            const lowerLine = line.toLowerCase();
+            // Skip battle-related messages but keep victory/defeat messages
+            if (!lowerLine.includes('attack') && 
+                !lowerLine.includes('damage') && 
+                !lowerLine.includes('stance')) {
+                if (line.trim()) {
+                    nonBattleLines.push(line);
+                    
+                    // Check for player defeat
+                    if (lowerLine.includes('you died') || 
+                        lowerLine.includes('you were killed') || 
+                        lowerLine.includes('you have been defeated')) {
+                        playerDefeated = true;
+                        
+                        // Try to extract what killed the player
+                        const killedByMatch = line.match(/by (?:the |a |an )?([^!.]+)/i);
+                        if (killedByMatch && killedByMatch[1]) {
+                            killedBy = killedByMatch[1].trim();
+                        }
+                    }
+                    
+                    // Check for victory
+                    if (lowerLine.includes('defeated') || lowerLine.includes('victory')) {
+                        const monsterMatch = line.match(/defeated the ([^!.]+)/i);
+                        if (monsterMatch && monsterMatch[1]) {
+                            defeatedMonster = monsterMatch[1].trim();
+                        }
+                    }
+                    
+                    // Check for gold gained
+                    if (lowerLine.includes('gold')) {
+                        const goldMatch = line.match(/(\d+) gold/i);
+                        if (goldMatch && goldMatch[1]) {
+                            goldGained = parseInt(goldMatch[1]);
+                        }
+                    }
                 }
             }
         });
         
-        // Add battle messages to battle log
-        if (battleMessages.length > 0) {
-            // Add each battle message as a new paragraph
-            battleMessages.forEach(line => {
+        // Show appropriate screen based on battle outcome
+        if (playerDefeated) {
+            showDefeatedScreen(`You were killed by ${killedBy || "your enemy"}`, killedBy);
+        } else if (nonBattleLines.length > 0 && defeatedMonster) {
+            showSuccessScreen(`Victory!`, `You defeated ${defeatedMonster}`, goldGained);
+        } else {
+            // Fallback to regular message display if we couldn't parse the details
+            nonBattleLines.forEach(line => {
                 const p = document.createElement('p');
                 p.textContent = line;
-                battleLog.appendChild(p);
+                currentMessage.appendChild(p);
             });
-            
-            // Limit battle log size
-            while (battleLog.children.length > 10) {
-                battleLog.removeChild(battleLog.firstChild);
-            }
-            
-            // Scroll battle log to bottom
-            battleLog.scrollTop = battleLog.scrollHeight;
-        }
-        
-        // Add non-battle messages to current message
-        if (nonBattleMessages.length > 0) {
-            addCurrentMessage(nonBattleMessages.join('\n'));
-        } else {
-            // If no non-battle messages, add a generic message
-            addCurrentMessage("Battle in progress...");
         }
     } else {
         // For non-battle events, just add to current message
+        clearCurrentMessage();
         addCurrentMessage(message);
     }
 }
 
-// Helper function to determine if a message is battle-related
-function isBattleMessage(message) {
-    const battleKeywords = [
-        'attack', 'damage', 'defeated', 'flee', 'stance', 'defensive',
-        'goblin', 'enemy', 'health', 'hp', 'battle', 'old man',
-        'for 1 damage', 'attacks you'
-    ];
-    
-    message = message.toLowerCase();
-    return battleKeywords.some(keyword => message.includes(keyword));
-}
 
 // Update the player status display
 function updatePlayerStatus(player) {
@@ -262,6 +298,75 @@ function clearCurrentMessage() {
     while (currentMessage.firstChild) {
         currentMessage.removeChild(currentMessage.firstChild);
     }
+    
+    // Remove any special screen classes if present
+    currentMessage.classList.remove('success-screen', 'defeated-screen');
+}
+
+// Show success screen with embellishments
+function showSuccessScreen(title, message, goldAmount = 0) {
+    clearCurrentMessage();
+    
+    // Add success screen class to the message container
+    currentMessage.classList.add('success-screen');
+    
+    // Create title with stars
+    const titleElement = document.createElement('div');
+    titleElement.classList.add('success-title');
+    titleElement.innerHTML = `★ ${title} ★`;
+    currentMessage.appendChild(titleElement);
+    
+    // Create message
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('success-message');
+    messageElement.textContent = message;
+    currentMessage.appendChild(messageElement);
+    
+    // Create gold reward display if gold was gained
+    if (goldAmount > 0) {
+        const goldElement = document.createElement('div');
+        goldElement.classList.add('success-reward');
+        goldElement.innerHTML = `<span class="gold-icon">⭐</span> ${goldAmount} gold gained!`;
+        currentMessage.appendChild(goldElement);
+    }
+    
+    // Add decorative border
+    const borderElement = document.createElement('div');
+    borderElement.classList.add('success-border');
+    borderElement.innerHTML = '✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧';
+    currentMessage.appendChild(borderElement);
+    
+    // Scroll to bottom
+    currentMessage.scrollTop = currentMessage.scrollHeight;
+}
+
+// Show defeated screen with embellishments
+function showDefeatedScreen(message, killedBy) {
+    clearCurrentMessage();
+    
+    // Add defeated screen class to the message container
+    currentMessage.classList.add('defeated-screen');
+    
+    // Create title with skull symbols
+    const titleElement = document.createElement('div');
+    titleElement.classList.add('defeated-title');
+    titleElement.innerHTML = `☠ Defeated ☠`;
+    currentMessage.appendChild(titleElement);
+    
+    // Create message
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('defeated-message');
+    messageElement.textContent = message || `You were killed by ${killedBy}`;
+    currentMessage.appendChild(messageElement);
+    
+    // Add decorative border
+    const borderElement = document.createElement('div');
+    borderElement.classList.add('defeated-border');
+    borderElement.innerHTML = '✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧';
+    currentMessage.appendChild(borderElement);
+    
+    // Scroll to bottom
+    currentMessage.scrollTop = currentMessage.scrollHeight;
 }
 
 // Show battle information
@@ -276,15 +381,24 @@ function showBattleInfo(enemy) {
     
     enemyHealthText.textContent = `${enemy.health} HP`;
     
-    // Add initial battle message
-    const p = document.createElement('p');
-    p.textContent = `Battle with ${enemy.name} begins!`;
-    battleLog.appendChild(p);
+    // Only clear battle log and add initial message if this is a new battle
+    // Check if battle log is empty or only has the initial "begins" message
+    if (battleLog.children.length === 0) {
+        // Add initial battle message for new battles
+        const p = document.createElement('p');
+        p.textContent = `Battle with ${enemy.name} begins!`;
+        battleLog.appendChild(p);
+    }
 }
 
 // Hide battle information
 function hideBattleInfo() {
     battleContainer.style.display = 'none';
+    
+    // Clear battle log when battle ends
+    while (battleLog.firstChild) {
+        battleLog.removeChild(battleLog.firstChild);
+    }
 }
 
 // Show compass navigation
