@@ -6,7 +6,7 @@
     <title>Text RPG</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body class="earth-theme">
+<body class="dark-fantasy-theme">
     <div class="container">
         <header>
             <h1>Text RPG</h1>
@@ -14,8 +14,10 @@
         
         <div class="game-container">
             <div class="status-bar">
-                <div class="status-item">
-                    <span class="label">Health:</span>
+                <div class="status-item health-status">
+                    <div class="health-bar player-health-bar">
+                        <div class="health-bar-fill" id="player-health-bar"></div>
+                    </div>
                     <span id="health">10/10</span>
                 </div>
                 <div class="status-item">
@@ -27,33 +29,80 @@
                     <span id="time">Day</span>
                 </div>
                 <div class="status-item" id="vampire-status" style="display: none;">
-                    <span class="label">Status:</span>
                     <span>Vampire</span>
                 </div>
             </div>
             
             <div class="game-content">
-                <div id="message-box">
-                    <p>Welcome to Text RPG! Click "Start Game" to begin your adventure.</p>
-                </div>
-                
-                <div id="enemy-info" style="display: none;">
-                    <h3>Enemy: <span id="enemy-name"></span></h3>
-                    <div class="health-bar">
-                        <div class="health-bar-fill" id="enemy-health-bar"></div>
+                <!-- Current message section -->
+                <div class="current-message-container">
+                    <div id="current-message" class="message-box">
+                        <p>Welcome to Text RPG! Click "Start Game" to begin your adventure.</p>
                     </div>
-                    <span id="enemy-health-text"></span>
                 </div>
                 
-                <div class="action-buttons" id="action-buttons">
-                    <button id="start-button" class="action-button">Start Game</button>
+                <!-- Battle section -->
+                <div class="battle-container" id="battle-container" style="display: none;">
+                    <div id="enemy-info" class="battle-info">
+                        <span id="enemy-name" class="enemy-name"></span>
+                        <div class="health-bar enemy-health-bar">
+                            <div class="health-bar-fill" id="enemy-health-bar"></div>
+                        </div>
+                        <span id="enemy-health-text"></span>
+                    </div>
+                    
+                    <div id="player-battle-info" class="battle-info">
+                        <span class="player-name">Player</span>
+                        <div class="health-bar player-health-bar">
+                            <div class="health-bar-fill" id="player-battle-health-bar"></div>
+                        </div>
+                        <span id="player-battle-health-text"></span>
+                    </div>
+                    
+                    <!-- Battle log -->
+                    <div id="battle-log" class="battle-log">
+                        <p>Battle begins!</p>
+                    </div>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="action-buttons-container" id="action-buttons-container">
+                    <div class="action-buttons" id="action-buttons">
+                        <button id="start-button" class="action-button">
+                            <span class="action-key">1</span>
+                            <span class="action-text">Start Game</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Compass navigation (initially hidden) -->
+                    <div class="compass-container" id="compass-container" style="display: none;">
+                        <button class="compass-button north" id="compass-north">
+                            <span class="action-key">1</span>
+                            <span class="direction-arrow">↑</span>
+                            <span class="direction-text">Move North</span>
+                        </button>
+                        <button class="compass-button east" id="compass-east">
+                            <span class="action-key">2</span>
+                            <span class="direction-arrow">→</span>
+                            <span class="direction-text">Move East</span>
+                        </button>
+                        <button class="compass-button south" id="compass-south">
+                            <span class="action-key">3</span>
+                            <span class="direction-arrow">↓</span>
+                            <span class="direction-text">Move South</span>
+                        </button>
+                        <button class="compass-button west" id="compass-west">
+                            <span class="action-key">4</span>
+                            <span class="direction-arrow">←</span>
+                            <span class="direction-text">Move West</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
         
         <footer>
-            <p>Text RPG Game - V1</p>
-            <p class="keyboard-hint">Tip: Use number keys (1-9) as shortcuts for actions</p>
+            <p>Text RPG Game</p>
         </footer>
     </div>
     

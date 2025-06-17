@@ -13,12 +13,15 @@
 - create account & save progress
 - exciting encoutners
     - randomization means interesting enemies, special quests, and NPCs can popup
-- death is not permanent
-    - roguelite mechanics
+- roguelite mechanics
+    - death is not permanent...
+    - each generation you will inherit a randomized blessing trait and curse trait
 - dynamic enemy system
   - nemesis system (enemies that kill you are marked as nemeses, get stronger, and give better rewards)
   - high level enemies can run away from you & target your weaknesses
   - clever enemies can steal items from you
+  - enemies that you run away from will seek you out with a higher liklihood, and they will be stronger & aggressive
+  - see enemy intents during battle
 - mystery
     - world map is hidden by default, you can unlock portions of it via quests & beating certain enemies
     - multiple worlds or realms, and each has a diff visual treament for the UI
