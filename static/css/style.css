@@ -138,8 +138,8 @@ header h1 {
 
 /* Success Screen Styles */
 .message-box.success-screen {
-    background-color: #1e2420;
-    border: 1px solid #60a060;
+    background-color: #1e2024;
+    border: 1px solid #3a5a6a;
     text-align: center;
     padding: 15px;
     animation: success-glow 2s infinite alternate;
@@ -148,9 +148,9 @@ header h1 {
 .success-title {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #60a060;
+    color: #3a5a6a;
     margin-bottom: 15px;
-    text-shadow: 0 0 5px rgba(96, 160, 96, 0.5);
+    text-shadow: 0 0 5px rgba(58, 90, 106, 0.4);
 }
 
 .success-message {
@@ -172,7 +172,7 @@ header h1 {
 }
 
 .success-border {
-    color: #60a060;
+    color: #3a5a6a;
     margin-top: 10px;
     font-size: 0.9rem;
     letter-spacing: 2px;
@@ -180,10 +180,10 @@ header h1 {
 
 @keyframes success-glow {
     from {
-        box-shadow: 0 0 5px rgba(96, 160, 96, 0.2);
+        box-shadow: 0 0 5px rgba(58, 90, 106, 0.15);
     }
     to {
-        box-shadow: 0 0 15px rgba(96, 160, 96, 0.5);
+        box-shadow: 0 0 15px rgba(58, 90, 106, 0.3);
     }
 }
 
@@ -238,6 +238,14 @@ header h1 {
 
 .enemy-name {
     color: #c08080;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    display: block;
+}
+
+.player-name {
+    color: #80c080;
     margin-bottom: 5px;
     font-weight: bold;
     font-size: 1.1rem;

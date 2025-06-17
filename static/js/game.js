@@ -21,6 +21,8 @@ const enemyInfo = document.getElementById('enemy-info');
 const enemyName = document.getElementById('enemy-name');
 const enemyHealthBar = document.getElementById('enemy-health-bar');
 const enemyHealthText = document.getElementById('enemy-health-text');
+const playerBattleHealthBar = document.getElementById('player-battle-health-bar');
+const playerBattleHealthText = document.getElementById('player-battle-health-text');
 
 // Compass buttons
 const compassNorth = document.getElementById('compass-north');
@@ -246,6 +248,21 @@ function updatePlayerStatus(player) {
         playerHealthBar.style.backgroundColor = '#c0a040'; // Yellow for medium health
     } else {
         playerHealthBar.style.backgroundColor = '#60a060'; // Green for good health
+    }
+    
+    // Update battle health display if in battle
+    if (playerBattleHealthBar && playerBattleHealthText) {
+        playerBattleHealthBar.style.width = `${healthPercentage}%`;
+        playerBattleHealthText.textContent = `${player.health}/${player.max_health} HP`;
+        
+        // Apply same color logic to battle health bar
+        if (healthPercentage <= 25) {
+            playerBattleHealthBar.style.backgroundColor = '#c04040';
+        } else if (healthPercentage <= 50) {
+            playerBattleHealthBar.style.backgroundColor = '#c0a040';
+        } else {
+            playerBattleHealthBar.style.backgroundColor = '#60a060';
+        }
     }
     
     // Update gold

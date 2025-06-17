@@ -23,8 +23,8 @@ Battle UI improvements
 - [x] remove the battle log container that shows "Battle with Goblin has begun!"
 - [x] remove the game log box to simplify the UI
 - [x] add a dedicated battle log between enemy health bar and player actions for battle-specific messages
-- [x] ensure battle messages like "You attack the Goblin for 1 damage!" only appear in the battle log, not in the current action area
-- [x] fix battle log to properly display attack messages by completely rewriting the message handling logic
+- [x] ensure battle messages like "You attack the Goblin for 1 damage!" only appear in the battle log
+- [x] limit battle log to only show the latest 2 messages
 
 Navigation improvements
 - [x] replace "Move on the map" with directional movement options (North, East, South, West)
