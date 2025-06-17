@@ -1,6 +1,6 @@
 # Text RPG Game
 
-A simple text-based RPG game with basic features like battles, loot collection, and a day/night cycle.
+A dark fantasy text-based RPG game with battles, loot collection, and a day/night cycle.
 
 ## Features (V1)
 
@@ -10,15 +10,26 @@ A simple text-based RPG game with basic features like battles, loot collection, 
 - Actions
 - Day & night cycle (every 3 actions)
 - Web-based UI with keyboard shortcuts
+- Dark fantasy theme
+
+## UI Improvements
+
+- Separate game log and battle log with different UI sections
+- Visual distinction between game events and current actions
+- Keyboard shortcuts displayed directly on action buttons
+- Dark fantasy theme with appropriate color scheme
+- Responsive design for different screen sizes
 
 ## How to Run
 
 ### Web Version (Recommended)
 
 1. Make sure you have Python 3 installed
-2. Install the required dependencies:
+2. Create a virtual environment and install the required dependencies:
 
 ```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
@@ -58,8 +69,11 @@ python main.py
 
 ### Web Version
 - Click on action buttons to make choices
-- Use number keys (1-9) as keyboard shortcuts for actions
-- The UI theme changes based on the time of day (day/night)
+- Use number keys (1-9) as keyboard shortcuts for actions (displayed on buttons)
+- The UI theme adjusts based on the time of day (day/night)
+- Game log shows important events
+- Battle log shows combat results
+- Current action shows immediate feedback
 
 ### Terminal Version
 The game is controlled through text input. When prompted, enter the number corresponding to your choice.
@@ -69,3 +83,4 @@ The game is controlled through text input. When prompted, enter the number corre
 - Fast execution
 - Browser playable
 - Persistent sessions
+- Dark fantasy theme

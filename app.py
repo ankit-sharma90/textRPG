@@ -76,7 +76,7 @@ def take_action():
             response = {
                 'message': 'You reject the offering and move on. The old man looks disappointed as you walk away.',
                 'event': 'map',
-                'options': ['Move on the map', 'Check inventory', 'Quit game']
+                'options': ['Move North', 'Move East', 'Move South', 'Move West']
             }
         elif choice == 2:  # Take and move on
             game.player.add_gold(10)
@@ -85,7 +85,7 @@ def take_action():
             response = {
                 'message': 'You accept the offering and thank the old man. The old man smiles and wishes you good luck on your journey.',
                 'event': 'map',
-                'options': ['Move on the map', 'Check inventory', 'Quit game']
+                'options': ['Move North', 'Move East', 'Move South', 'Move West']
             }
         elif choice == 3:  # Take and fight
             game.player.add_gold(10)
@@ -98,52 +98,35 @@ def take_action():
                     'name': 'Old Man',
                     'health': 5
                 },
-                'options': ['Attack', 'Defend']
+                'options': ['Attack', 'Defend', 'Flee']
             }
     
     # Handle map actions
     elif event == 'map':
-        if choice == 1:  # Move on map
+        # All directional movements (1-4) are handled the same way
+        if choice >= 1 and choice <= 4:
+            directions = ['North', 'East', 'South', 'West']
+            direction = directions[choice - 1]
+            
             game.action_taken()
             # 70% chance of battle
             import random
             if random.random() < 0.7:
                 response = {
-                    'message': 'You move to a new location and encounter a Goblin!',
+                    'message': f'You move {direction} and encounter a Goblin!',
                     'event': 'battle',
                     'enemy': {
                         'name': 'Goblin',
                         'health': 3
                     },
-                    'options': ['Attack', 'Defend']
+                    'options': ['Attack', 'Defend', 'Flee']
                 }
             else:
                 response = {
-                    'message': 'You move to a new location but find nothing of interest.',
+                    'message': f'You move {direction} but find nothing of interest.',
                     'event': 'map',
-                    'options': ['Move on the map', 'Check inventory', 'Quit game']
+                    'options': ['Move North', 'Move East', 'Move South', 'Move West']
                 }
-        elif choice == 2:  # Check inventory
-            inventory = []
-            for item in game.player.inventory:
-                inventory.append({
-                    'name': item.name,
-                    'description': item.description
-                })
-            
-            response = {
-                'message': 'Your inventory:',
-                'event': 'inventory',
-                'inventory': inventory,
-                'equipped': game.player.equipped_weapon.name if game.player.equipped_weapon else 'None',
-                'options': ['Return to map']
-            }
-        elif choice == 3:  # Quit game
-            response = {
-                'message': 'Thanks for playing!',
-                'event': 'game_over',
-                'options': ['Start new game']
-            }
     
     # Handle battle actions
     elif event == 'battle':
@@ -165,7 +148,7 @@ def take_action():
                 response = {
                     'message': f"{message}\nYou defeated the {enemy_name}!\nYou found {gold_reward} gold!",
                     'event': 'map',
-                    'options': ['Move on the map', 'Check inventory', 'Quit game']
+                    'options': ['Move North', 'Move East', 'Move South', 'Move West']
                 }
             else:
                 # Enemy attacks back
@@ -190,7 +173,7 @@ def take_action():
                             'name': enemy_name,
                             'health': enemy_health
                         },
-                        'options': ['Attack', 'Defend']
+                        'options': ['Attack', 'Defend', 'Flee']
                     }
         
         elif choice == 2:  # Defend
@@ -204,8 +187,43 @@ def take_action():
                     'name': enemy_name,
                     'health': enemy_health
                 },
-                'options': ['Attack', 'Defend']
+                'options': ['Attack', 'Defend', 'Flee']
             }
+        
+        elif choice == 3:  # Flee
+            # 50% chance to successfully flee
+            import random
+            if random.random() < 0.5:
+                response = {
+                    'message': f"You successfully flee from the {enemy_name}!",
+                    'event': 'map',
+                    'options': ['Move North', 'Move East', 'Move South', 'Move West']
+                }
+            else:
+                # Failed to flee, enemy attacks
+                enemy_damage = 1
+                game.player.take_damage(enemy_damage)
+                
+                if game.player.health <= 0:
+                    # Player died
+                    response = {
+                        'message': f"You failed to flee!\nThe {enemy_name} attacks you for {enemy_damage} damage!\nYou have been defeated!",
+                        'event': 'death',
+                        'options': [
+                            'Lose everything and start new',
+                            'Resurrect as a vampire (keep items but take 5% damage during day)'
+                        ]
+                    }
+                else:
+                    response = {
+                        'message': f"You failed to flee!\nThe {enemy_name} attacks you for {enemy_damage} damage!",
+                        'event': 'battle',
+                        'enemy': {
+                            'name': enemy_name,
+                            'health': enemy_health
+                        },
+                        'options': ['Attack', 'Defend', 'Flee']
+                    }
     
     # Handle death
     elif event == 'death':
@@ -214,23 +232,14 @@ def take_action():
             response = {
                 'message': "You've been reborn. All progress lost.",
                 'event': 'map',
-                'options': ['Move on the map', 'Check inventory', 'Quit game']
+                'options': ['Move North', 'Move East', 'Move South', 'Move West']
             }
         elif choice == 2:  # Vampire
             game.player.resurrect_as_vampire()
             response = {
                 'message': "You've been resurrected as a vampire! You'll take damage during daytime.",
                 'event': 'map',
-                'options': ['Move on the map', 'Check inventory', 'Quit game']
-            }
-    
-    # Handle inventory
-    elif event == 'inventory':
-        if choice == 1:  # Return to map
-            response = {
-                'message': 'You return to exploring.',
-                'event': 'map',
-                'options': ['Move on the map', 'Check inventory', 'Quit game']
+                'options': ['Move North', 'Move East', 'Move South', 'Move West']
             }
     
     # Add player status to all responses
