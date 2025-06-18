@@ -20,6 +20,13 @@ class CellType(Enum):
     TREASURE = "treasure"
     PORTAL = "portal"
 
+class MajorEventType(Enum):
+    DRAGON = "dragon"
+    TREASURE_VAULT = "treasure_vault"
+    MASTER_MERCHANT = "master_merchant"
+    ANCIENT_PORTAL = "ancient_portal"
+    BOSS_ENEMY = "boss_enemy"
+
 class WorldMap:
     """Represents a single world map"""
     
@@ -27,49 +34,51 @@ class WorldMap:
         self.world_type = world_type
         self.size = size
         self.grid = [[CellType.EMPTY for _ in range(size)] for _ in range(size)]
+        self.major_events = {}  # {(x, y): MajorEventType}
         self.generate_map()
     
     def generate_map(self):
-        """Generate the world map with random content"""
-        total_cells = self.size * self.size
+        """Generate only major events on the map"""
+        # Generate 5-10 major events per world
+        num_events = random.randint(5, 10)
         
-        # Distribution of content based on world type
-        distributions = {
-            WorldType.EARTH: {"enemy": 0.15, "npc": 0.08, "merchant": 0.03, "treasure": 0.05},
-            WorldType.HEAVENLY_MOUNTAINS: {"enemy": 0.12, "npc": 0.10, "merchant": 0.02, "treasure": 0.08},
-            WorldType.STONE_CAVERNS: {"enemy": 0.20, "npc": 0.05, "merchant": 0.02, "treasure": 0.10},
-            WorldType.FUTURE_CITY: {"enemy": 0.10, "npc": 0.12, "merchant": 0.08, "treasure": 0.03},
-            WorldType.PREHISTORIC_JUNGLE: {"enemy": 0.25, "npc": 0.03, "merchant": 0.01, "treasure": 0.06},
-            WorldType.ATLANTIS: {"enemy": 0.18, "npc": 0.07, "merchant": 0.04, "treasure": 0.12}
+        # Major event distributions by world type
+        event_weights = {
+            WorldType.EARTH: [MajorEventType.BOSS_ENEMY, MajorEventType.TREASURE_VAULT, MajorEventType.MASTER_MERCHANT],
+            WorldType.HEAVENLY_MOUNTAINS: [MajorEventType.DRAGON, MajorEventType.ANCIENT_PORTAL, MajorEventType.TREASURE_VAULT],
+            WorldType.STONE_CAVERNS: [MajorEventType.BOSS_ENEMY, MajorEventType.TREASURE_VAULT, MajorEventType.DRAGON],
+            WorldType.FUTURE_CITY: [MajorEventType.MASTER_MERCHANT, MajorEventType.ANCIENT_PORTAL, MajorEventType.BOSS_ENEMY],
+            WorldType.PREHISTORIC_JUNGLE: [MajorEventType.DRAGON, MajorEventType.BOSS_ENEMY, MajorEventType.TREASURE_VAULT],
+            WorldType.ATLANTIS: [MajorEventType.ANCIENT_PORTAL, MajorEventType.TREASURE_VAULT, MajorEventType.DRAGON]
         }
         
-        dist = distributions[self.world_type]
+        available_events = event_weights[self.world_type]
         
-        # Place content randomly
-        for x in range(self.size):
-            for y in range(self.size):
-                rand = random.random()
-                if rand < dist["enemy"]:
-                    self.grid[x][y] = CellType.ENEMY
-                elif rand < dist["enemy"] + dist["npc"]:
-                    self.grid[x][y] = CellType.NPC
-                elif rand < dist["enemy"] + dist["npc"] + dist["merchant"]:
-                    self.grid[x][y] = CellType.MERCHANT
-                elif rand < dist["enemy"] + dist["npc"] + dist["merchant"] + dist["treasure"]:
-                    self.grid[x][y] = CellType.TREASURE
-        
-        # Add a few portals to other worlds (except starting world)
-        if self.world_type != WorldType.EARTH:
-            portal_count = random.randint(1, 3)
-            for _ in range(portal_count):
-                x, y = random.randint(0, self.size-1), random.randint(0, self.size-1)
-                self.grid[x][y] = CellType.PORTAL
+        # Place major events randomly across the map
+        for _ in range(num_events):
+            # Find empty location
+            while True:
+                x = random.randint(5, self.size-6)  # Keep away from edges
+                y = random.randint(5, self.size-6)
+                if (x, y) not in self.major_events:
+                    break
+            
+            # Choose random major event type
+            event_type = random.choice(available_events)
+            self.major_events[(x, y)] = event_type
     
     def get_cell(self, x, y):
         """Get the content of a cell"""
         if 0 <= x < self.size and 0 <= y < self.size:
+            # Check for major events first
+            if (x, y) in self.major_events:
+                return self.major_events[(x, y)]
             return self.grid[x][y]
         return None
+    
+    def has_major_event_at(self, x, y):
+        """Check if there's a major event at coordinates"""
+        return (x, y) in self.major_events
 
 class World:
     """Manages the game world and map system"""
@@ -93,7 +102,17 @@ class World:
     def get_current_cell(self):
         """Get the content of the current cell"""
         current_map = self.get_current_map()
-        return current_map.get_cell(self.player_x, self.player_y)
+        cell_content = current_map.get_cell(self.player_x, self.player_y)
+        
+        # If it's a major event, return it; otherwise generate random encounter
+        if isinstance(cell_content, MajorEventType):
+            return cell_content
+        
+        # Generate random encounter (70% chance of enemy)
+        if random.random() < 0.7:
+            return CellType.ENEMY
+        else:
+            return CellType.EMPTY
     
     def move_player(self, direction):
         """Move the player in a direction (north, east, south, west)"""
@@ -127,50 +146,64 @@ class World:
         
         base_desc = f"You are in {world_descriptions[self.current_world]}."
         
+        # Handle major events
+        if isinstance(cell_content, MajorEventType):
+            major_descriptions = {
+                MajorEventType.DRAGON: f"{base_desc} A massive dragon blocks your path, its eyes glowing with ancient fury!",
+                MajorEventType.TREASURE_VAULT: f"{base_desc} You discover a legendary treasure vault, sealed with ancient magic.",
+                MajorEventType.MASTER_MERCHANT: f"{base_desc} A renowned master merchant has set up an exclusive trading post here.",
+                MajorEventType.ANCIENT_PORTAL: f"{base_desc} An ancient portal radiates immense power, connecting to other realms.",
+                MajorEventType.BOSS_ENEMY: f"{base_desc} A fearsome boss creature emerges, ready for battle!"
+            }
+            return major_descriptions.get(cell_content, f"{base_desc} Something extraordinary awaits.")
+        
+        # Handle regular encounters
         if cell_content == CellType.ENEMY:
-            return f"{base_desc} You sense danger nearby..."
-        elif cell_content == CellType.NPC:
-            return f"{base_desc} You see someone who might want to talk."
-        elif cell_content == CellType.MERCHANT:
-            return f"{base_desc} You spot a merchant's stall."
-        elif cell_content == CellType.TREASURE:
-            return f"{base_desc} Something glints in the distance."
-        elif cell_content == CellType.PORTAL:
-            return f"{base_desc} A mysterious portal shimmers before you."
+            return f"{base_desc} You encounter a hostile creature!"
         else:
             return f"{base_desc} The area seems quiet."
     
     def get_location_actions(self, cell_content):
         """Get available actions for the current location"""
+        # Handle major events
+        if isinstance(cell_content, MajorEventType):
+            if cell_content == MajorEventType.DRAGON:
+                return [
+                    "Challenge the dragon to combat",
+                    "Attempt to negotiate",
+                    "Try to sneak past"
+                ]
+            elif cell_content == MajorEventType.TREASURE_VAULT:
+                return [
+                    "Attempt to break the seal",
+                    "Search for the key",
+                    "Study the magical locks"
+                ]
+            elif cell_content == MajorEventType.MASTER_MERCHANT:
+                return [
+                    "Buy legendary weapon (50 gold)",
+                    "Buy master health elixir (30 gold)",
+                    "Trade rare items"
+                ]
+            elif cell_content == MajorEventType.ANCIENT_PORTAL:
+                return [
+                    "Activate the portal",
+                    "Study the ancient runes",
+                    "Channel your energy into it"
+                ]
+            elif cell_content == MajorEventType.BOSS_ENEMY:
+                return [
+                    "Engage in epic battle",
+                    "Try to find weakness",
+                    "Attempt tactical retreat"
+                ]
+        
+        # Handle regular encounters
         if cell_content == CellType.ENEMY:
             return [
                 "Attack the enemy",
                 "Try to sneak past",
                 "Observe from distance"
-            ]
-        elif cell_content == CellType.NPC:
-            return [
-                "Talk to the NPC",
-                "Ask for directions",
-                "Request a quest"
-            ]
-        elif cell_content == CellType.MERCHANT:
-            return [
-                "Buy health potion (10 gold)",
-                "Buy weapon upgrade (15 gold)",
-                "Sell items for gold"
-            ]
-        elif cell_content == CellType.TREASURE:
-            return [
-                "Search the treasure",
-                "Check for traps first",
-                "Take only what you need"
-            ]
-        elif cell_content == CellType.PORTAL:
-            return [
-                "Step through the portal",
-                "Examine the portal closely",
-                "Touch the portal cautiously"
             ]
         else:
             return [
@@ -193,7 +226,7 @@ class World:
         return directions
     
     def get_direction_hint(self, direction):
-        """Get hint about what's in a specific direction"""
+        """Get hint about major events in a specific direction (only if close)"""
         current_map = self.get_current_map()
         target_x, target_y = self.player_x, self.player_y
         
@@ -206,30 +239,48 @@ class World:
         elif direction == "west" and self.player_x > 0:
             target_x -= 1
         else:
-            return "blocked"
+            return None
         
-        cell_content = current_map.get_cell(target_x, target_y)
+        # Check for major events within 2 steps in that direction
+        for distance in range(1, 3):
+            check_x, check_y = target_x, target_y
+            
+            if direction == "north":
+                check_y = target_y - distance + 1
+            elif direction == "east":
+                check_x = target_x + distance - 1
+            elif direction == "south":
+                check_y = target_y + distance - 1
+            elif direction == "west":
+                check_x = target_x - distance + 1
+            
+            if 0 <= check_x < 50 and 0 <= check_y < 50:
+                if current_map.has_major_event_at(check_x, check_y):
+                    event_type = current_map.major_events[(check_x, check_y)]
+                    hints = {
+                        MajorEventType.DRAGON: "ancient power stirs",
+                        MajorEventType.TREASURE_VAULT: "great riches await",
+                        MajorEventType.MASTER_MERCHANT: "legendary trader nearby",
+                        MajorEventType.ANCIENT_PORTAL: "otherworldly energy pulses",
+                        MajorEventType.BOSS_ENEMY: "terrible danger approaches"
+                    }
+                    return hints.get(event_type, "something significant")
         
-        hints = {
-            CellType.ENEMY: "danger lurks",
-            CellType.NPC: "someone waits",
-            CellType.MERCHANT: "trade awaits",
-            CellType.TREASURE: "riches glint",
-            CellType.PORTAL: "magic shimmers",
-            CellType.EMPTY: "path is clear"
-        }
-        
-        return hints.get(cell_content, "unknown")
+        return None
     
     def get_directional_options_with_hints(self):
-        """Get movement options with hints about each direction"""
+        """Get movement options with hints only for major events nearby"""
         directions = self.get_available_directions()
         options = []
         
         for direction in directions:
             hint = self.get_direction_hint(direction)
             direction_name = direction.capitalize()
-            options.append(f"Move {direction_name} ({hint})")
+            
+            if hint:
+                options.append(f"Move {direction_name} ({hint})")
+            else:
+                options.append(f"Move {direction_name}")
         
         return options
     
