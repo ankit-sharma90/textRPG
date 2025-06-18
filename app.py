@@ -123,7 +123,10 @@ def take_action():
                 # Check what's at the new location
                 cell_content = game.world.get_current_cell()
                 
-                if cell_content.value == "enemy":
+                # Import the enum types we need
+                from game.world import CellType, MajorEventType
+                
+                if cell_content == CellType.ENEMY:
                     response = {
                         'message': f'{message}\\nYou encounter a Goblin!',
                         'event': 'battle',
@@ -142,11 +145,17 @@ def take_action():
                     movement_options = game.world.get_directional_options_with_hints()
                     
                     # If there are special actions, show location event
-                    if cell_content.value != 'empty':
+                    if cell_content != CellType.EMPTY:
+                        # Get the correct location type string
+                        if hasattr(cell_content, 'value'):
+                            location_type = cell_content.value
+                        else:
+                            location_type = str(cell_content).split('.')[-1].lower()
+                        
                         response = {
                             'message': message,
                             'event': 'location',
-                            'location_type': cell_content.value,
+                            'location_type': location_type,
                             'options': location_actions + ['Continue exploring']
                         }
                     else:
@@ -274,15 +283,24 @@ def take_action():
             # Call the interaction method with the choice
             interaction_result = game.handle_location_interaction(choice)
             
-            # Check if this triggers a battle (enemy attack)
-            if location_type == 'enemy' and choice == 1:
+            # Check if this triggers a battle
+            battle_triggers = {
+                'enemy': (choice == 1),
+                'dragon': (choice == 1 or (choice == 2 and 'failed' in interaction_result) or (choice == 3 and 'inevitable' in interaction_result)),
+                'boss_enemy': (choice == 1 or (choice == 3 and 'failed' in interaction_result))
+            }
+            
+            if location_type in battle_triggers and battle_triggers[location_type]:
+                enemy_stats = {
+                    'enemy': {'name': 'Goblin', 'health': 3},
+                    'dragon': {'name': 'Ancient Dragon', 'health': 15},
+                    'boss_enemy': {'name': 'Boss Monster', 'health': 10}
+                }
+                
                 response = {
                     'message': interaction_result,
                     'event': 'battle',
-                    'enemy': {
-                        'name': 'Goblin',
-                        'health': 3
-                    },
+                    'enemy': enemy_stats.get(location_type, {'name': 'Enemy', 'health': 5}),
                     'options': ['Attack', 'Defend', 'Flee']
                 }
             else:

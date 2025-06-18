@@ -215,11 +215,89 @@ class GameManager:
     def handle_location_interaction(self, action_choice):
         """Handle location interaction and return result message"""
         from game.events import BattleEvent
+        from game.world import MajorEventType
         
         cell_content = self.world.get_current_cell()
         result_message = ""
         
-        if cell_content == CellType.ENEMY:
+        # Handle major events first
+        if isinstance(cell_content, MajorEventType):
+            if cell_content == MajorEventType.TREASURE_VAULT:
+                if action_choice == 1:  # Attempt to break the seal
+                    gold_found = random.randint(50, 100)
+                    self.player.gold += gold_found
+                    result_message = f"You break the ancient seal! The vault opens, revealing {gold_found} gold!"
+                elif action_choice == 2:  # Search for the key
+                    gold_found = random.randint(30, 60)
+                    self.player.gold += gold_found
+                    result_message = f"You find a hidden key and unlock the vault safely, gaining {gold_found} gold!"
+                elif action_choice == 3:  # Study the magical locks
+                    heal_amount = random.randint(5, 10)
+                    self.player.health = min(self.player.max_health, self.player.health + heal_amount)
+                    result_message = f"Studying the magic teaches you ancient healing. You recover {heal_amount} health!"
+            
+            elif cell_content == MajorEventType.MASTER_MERCHANT:
+                if action_choice == 1:  # Buy legendary weapon
+                    if self.player.gold >= 50:
+                        self.player.gold -= 50
+                        result_message = "You purchase a legendary weapon! Your attack power has greatly increased!"
+                    else:
+                        result_message = "You don't have enough gold for the legendary weapon (50 gold needed)."
+                elif action_choice == 2:  # Buy master health elixir
+                    if self.player.gold >= 30:
+                        self.player.gold -= 30
+                        self.player.max_health += 5
+                        self.player.health = self.player.max_health
+                        result_message = "You drink the master elixir! Your maximum health increased by 5 and you're fully healed!"
+                    else:
+                        result_message = "You don't have enough gold for the master elixir (30 gold needed)."
+                elif action_choice == 3:  # Trade rare items
+                    gold_earned = random.randint(20, 40)
+                    self.player.gold += gold_earned
+                    result_message = f"You trade rare items with the master merchant for {gold_earned} gold."
+            
+            elif cell_content == MajorEventType.DRAGON:
+                if action_choice == 1:  # Challenge to combat
+                    result_message = "You challenge the mighty dragon to battle!"
+                    # This should trigger a battle, handled in the web API
+                elif action_choice == 2:  # Attempt to negotiate
+                    if random.random() < 0.3:
+                        gold_reward = random.randint(30, 50)
+                        self.player.gold += gold_reward
+                        result_message = f"The dragon is impressed by your courage and grants you {gold_reward} gold!"
+                    else:
+                        result_message = "The dragon roars angrily! Negotiation failed - prepare for battle!"
+                elif action_choice == 3:  # Try to sneak past
+                    if random.random() < 0.4:
+                        result_message = "You successfully sneak past the sleeping dragon!"
+                    else:
+                        result_message = "The dragon awakens and spots you! Battle is inevitable!"
+            
+            elif cell_content == MajorEventType.ANCIENT_PORTAL:
+                if action_choice == 1:  # Activate the portal
+                    result_message = "The portal activates with blinding light! (Portal travel not yet implemented)"
+                elif action_choice == 2:  # Study the runes
+                    heal_amount = random.randint(3, 8)
+                    self.player.health = min(self.player.max_health, self.player.health + heal_amount)
+                    result_message = f"The ancient runes teach you forgotten magic. You recover {heal_amount} health!"
+                elif action_choice == 3:  # Channel energy
+                    gold_found = random.randint(10, 25)
+                    self.player.gold += gold_found
+                    result_message = f"Channeling energy into the portal creates {gold_found} gold from pure magic!"
+            
+            elif cell_content == MajorEventType.BOSS_ENEMY:
+                if action_choice == 1:  # Engage in epic battle
+                    result_message = "You engage the boss enemy in epic combat!"
+                    # This should trigger a battle, handled in the web API
+                elif action_choice == 2:  # Find weakness
+                    result_message = "You study the boss and discover its weakness! You'll have an advantage in battle!"
+                elif action_choice == 3:  # Tactical retreat
+                    if random.random() < 0.6:
+                        result_message = "You successfully retreat from the dangerous boss enemy!"
+                    else:
+                        result_message = "Retreat failed! The boss blocks your escape - battle begins!"
+        
+        elif cell_content == CellType.ENEMY:
             if action_choice == 1:  # Attack the enemy
                 result_message = "You've encountered an enemy!"
             elif action_choice == 2:  # Try to sneak past
