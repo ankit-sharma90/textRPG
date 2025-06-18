@@ -94,6 +94,129 @@ function startGame() {
     });
 }
 
+// Add message to battle log (only one message at a time)
+function addBattleLogMessage(message) {
+    // Clear existing messages
+    while (battleLog.firstChild) {
+        battleLog.removeChild(battleLog.firstChild);
+    }
+    
+    // Add new message
+    const p = document.createElement('p');
+    p.textContent = message;
+    battleLog.appendChild(p);
+    
+    battleLog.scrollTop = battleLog.scrollHeight;
+}
+
+// Animate button click
+function animateButtonClick(button) {
+    button.classList.add('button-clicked');
+    setTimeout(() => {
+        button.classList.remove('button-clicked');
+    }, 300);
+}
+
+// Execute player turn with precise timing
+function executePlayerTurn(data, choice) {
+    const lines = data.message ? data.message.split('\n').filter(line => line.trim()) : [];
+    const playerActionLine = lines.find(line => {
+        const lower = line.toLowerCase();
+        return lower.includes('you ') && (
+            lower.includes('attack') || lower.includes('hit') || lower.includes('strike') ||
+            lower.includes('defend') || lower.includes('block') || lower.includes('guard') ||
+            lower.includes('heal') || lower.includes('restore') || lower.includes('damage') ||
+            lower.includes('stance') || lower.includes('ready') || lower.includes('prepare')
+        );
+    }) || lines.find(line => line.trim().length > 0); // Fallback to any non-empty line
+    
+    updateTime(data.time);
+    
+    // 0.25s delay, then show battle log
+    setTimeout(() => {
+        if (playerActionLine) {
+            addBattleLogMessage(playerActionLine);
+        }
+        
+        // 0.25s delay, then play attack animation
+        setTimeout(() => {
+            if (choice <= gameState.options.length) {
+                triggerSkillAnimation(gameState.options[choice - 1], true);
+            }
+            
+            // 0.25s delay, then update enemy health
+            setTimeout(() => {
+                if (data.enemy) {
+                    gameState.enemy = data.enemy;
+                    const maxEnemyHealth = data.enemy.name === 'Goblin' ? 3 : 5;
+                    const healthPercentage = (data.enemy.health / maxEnemyHealth) * 100;
+                    enemyHealthBar.style.width = `${healthPercentage}%`;
+                    enemyHealthText.textContent = `${data.enemy.health} HP`;
+                }
+                
+                // Check if battle continues
+                if (data.event === 'battle' && data.enemy && data.enemy.health > 0) {
+                    executeEnemyTurn(data);
+                } else {
+                    battleAnimating = false;
+                    setBattleActionsEnabled(true);
+                    updateGameState(data);
+                }
+            }, 250);
+        }, 250);
+    }, 250);
+}
+
+// Execute enemy turn with precise timing
+function executeEnemyTurn(data) {
+    const lines = data.message ? data.message.split('\n').filter(line => line.trim()) : [];
+    
+    // Try multiple patterns to find enemy action
+    let enemyActionLine = lines.find(line => {
+        const lower = line.toLowerCase();
+        return (lower.includes('goblin') || lower.includes('enemy')) && (
+            lower.includes('attack') || lower.includes('hit') || lower.includes('strike') ||
+            lower.includes('damage')
+        ) && !lower.includes('you attack');
+    });
+    
+    // If not found, look for any line that mentions damage to player
+    if (!enemyActionLine) {
+        enemyActionLine = lines.find(line => {
+            const lower = line.toLowerCase();
+            return lower.includes('damage') && !lower.includes('you attack') && !lower.includes('you hit');
+        });
+    }
+    
+    // If still not found, use a generic message
+    if (!enemyActionLine && lines.length > 0) {
+        enemyActionLine = lines[lines.length - 1]; // Use last line as fallback
+    }
+    
+    // 0.5s delay before enemy turn starts
+    setTimeout(() => {
+        // 0.25s delay, then show enemy battle log
+        setTimeout(() => {
+            if (enemyActionLine) {
+                addBattleLogMessage(enemyActionLine);
+            }
+            
+            // 0.25s delay, then play enemy attack animation
+            setTimeout(() => {
+                triggerSkillAnimation('attack', false);
+                
+                // 0.25s delay, then update player health
+                setTimeout(() => {
+                    updatePlayerStatus(data.player);
+                    
+                    battleAnimating = false;
+                    setBattleActionsEnabled(true);
+                }, 250);
+            }, 250);
+        }, 250);
+    }, 500);
+}
+
 // Update the game state based on server response
 function updateGameState(data) {
     // Update player status
@@ -167,15 +290,12 @@ function processMessage(message, event) {
         // Scroll battle log to bottom to show latest messages
         battleLog.scrollTop = battleLog.scrollHeight;
         
-        // Clear current message during battle
-        clearCurrentMessage();
-        
-        // Add a status message to current message area
-        const p = document.createElement('p');
-        p.textContent = "Battle in progress... Check the battle log above for details.";
-        currentMessage.appendChild(p);
+        // Hide current message container during battle
+        document.querySelector('.current-message-container').style.display = 'none';
     } else if (gameState.event === 'battle' && event !== 'battle') {
         // Battle just ended - show victory or defeat screen
+        // Show current message container again
+        document.querySelector('.current-message-container').style.display = 'block';
         clearCurrentMessage();
         
         // Extract non-battle messages
@@ -241,7 +361,8 @@ function processMessage(message, event) {
             });
         }
     } else {
-        // For non-battle events, just add to current message
+        // For non-battle events, ensure current message container is visible and add message
+        document.querySelector('.current-message-container').style.display = 'block';
         clearCurrentMessage();
         addCurrentMessage(message);
     }
@@ -513,6 +634,7 @@ function updateBattleActions() {
         button.appendChild(textSpan);
         
         button.addEventListener('click', () => {
+            animateButtonClick(button);
             takeAction(index + 1);
         });
         
@@ -527,8 +649,50 @@ function hideBattleActions() {
     }
 }
 
+// Battle animation state
+let battleAnimating = false;
+
+// Trigger skill animation on specific health bar
+function triggerSkillAnimation(actionText, isPlayerAction = true) {
+    const lowerAction = actionText.toLowerCase();
+    let animationClass = '';
+    let targetElement = null;
+    
+    if (lowerAction.includes('attack') || lowerAction.includes('hit') || lowerAction.includes('strike')) {
+        animationClass = 'skill-animation-attack';
+        // Attack animations target the opponent's health bar
+        targetElement = isPlayerAction ? document.getElementById('enemy-info') : document.getElementById('player-battle-info');
+    } else if (lowerAction.includes('heal') || lowerAction.includes('restore') || lowerAction.includes('recover')) {
+        animationClass = 'skill-animation-heal';
+        // Heal animations target the caster's health bar
+        targetElement = isPlayerAction ? document.getElementById('player-battle-info') : document.getElementById('enemy-info');
+    } else if (lowerAction.includes('defend') || lowerAction.includes('block') || lowerAction.includes('guard')) {
+        animationClass = 'skill-animation-defend';
+        // Defend animations target the caster's health bar
+        targetElement = isPlayerAction ? document.getElementById('player-battle-info') : document.getElementById('enemy-info');
+    }
+    
+    if (animationClass && targetElement) {
+        targetElement.classList.add(animationClass);
+        setTimeout(() => {
+            targetElement.classList.remove(animationClass);
+        }, 1500);
+    }
+}
+
+// Disable/enable battle actions
+function setBattleActionsEnabled(enabled) {
+    const battleActionsContainer = document.getElementById('battle-actions');
+    if (battleActionsContainer) {
+        battleActionsContainer.style.display = enabled ? 'flex' : 'none';
+    }
+}
+
 // Take an action
 function takeAction(choice) {
+    // Prevent action if battle is animating
+    if (battleAnimating) return;
+    
     const requestData = {
         event: gameState.event,
         choice: choice
@@ -538,21 +702,46 @@ function takeAction(choice) {
     if (gameState.event === 'battle' && gameState.enemy) {
         requestData.enemy_name = gameState.enemy.name;
         requestData.enemy_health = gameState.enemy.health;
+        
+        // Start battle animation sequence
+        battleAnimating = true;
+        setBattleActionsEnabled(false);
+        
+        // Send server request immediately
+        fetch('/api/action', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Start player turn sequence with precise timing
+            executePlayerTurn(data, choice);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            addCurrentMessage('Error processing action. Please try again.');
+            battleAnimating = false;
+            setBattleActionsEnabled(true);
+        });
+    } else {
+        // Non-battle actions proceed normally
+        fetch('/api/action', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateGameState(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            addCurrentMessage('Error processing action. Please try again.');
+        });
     }
-    
-    fetch('/api/action', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        updateGameState(data);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        addCurrentMessage('Error processing action. Please try again.');
-    });
 }
