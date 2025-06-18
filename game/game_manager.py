@@ -395,8 +395,8 @@ class GameManager:
         """Update game state after an action is taken"""
         self.action_count += 1
         
-        # Update time (day/night cycle every 3 actions)
-        if self.action_count % 3 == 0:
+        # Update time (day/night cycle every 5 actions)
+        if self.action_count % 5 == 0:
             self.time_system.advance_time()
             
             # If player is a vampire, take damage during day
