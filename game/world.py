@@ -192,6 +192,47 @@ class World:
             directions.append("west")
         return directions
     
+    def get_direction_hint(self, direction):
+        """Get hint about what's in a specific direction"""
+        current_map = self.get_current_map()
+        target_x, target_y = self.player_x, self.player_y
+        
+        if direction == "north" and self.player_y > 0:
+            target_y -= 1
+        elif direction == "east" and self.player_x < 49:
+            target_x += 1
+        elif direction == "south" and self.player_y < 49:
+            target_y += 1
+        elif direction == "west" and self.player_x > 0:
+            target_x -= 1
+        else:
+            return "blocked"
+        
+        cell_content = current_map.get_cell(target_x, target_y)
+        
+        hints = {
+            CellType.ENEMY: "danger lurks",
+            CellType.NPC: "someone waits",
+            CellType.MERCHANT: "trade awaits",
+            CellType.TREASURE: "riches glint",
+            CellType.PORTAL: "magic shimmers",
+            CellType.EMPTY: "path is clear"
+        }
+        
+        return hints.get(cell_content, "unknown")
+    
+    def get_directional_options_with_hints(self):
+        """Get movement options with hints about each direction"""
+        directions = self.get_available_directions()
+        options = []
+        
+        for direction in directions:
+            hint = self.get_direction_hint(direction)
+            direction_name = direction.capitalize()
+            options.append(f"Move {direction_name} ({hint})")
+        
+        return options
+    
     def change_world(self, new_world):
         """Change to a different world"""
         if new_world in self.maps:

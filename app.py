@@ -75,17 +75,8 @@ def take_action():
     
     # Handle first encounter
     if event == 'first_encounter':
-        # Get available directions for map navigation
-        available_dirs = game.world.get_available_directions()
-        map_options = []
-        if 'north' in available_dirs:
-            map_options.append('Move North')
-        if 'east' in available_dirs:
-            map_options.append('Move East')
-        if 'south' in available_dirs:
-            map_options.append('Move South')
-        if 'west' in available_dirs:
-            map_options.append('Move West')
+        # Get available directions with hints for map navigation
+        map_options = game.world.get_directional_options_with_hints()
         
         if choice == 1:  # Reject
             response = {
@@ -147,17 +138,8 @@ def take_action():
                     cell_content = game.world.get_current_cell()
                     location_actions = game.world.get_location_actions(cell_content)
                     
-                    # Get available directions for next move
-                    available_dirs = game.world.get_available_directions()
-                    movement_options = []
-                    if 'north' in available_dirs:
-                        movement_options.append('Move North')
-                    if 'east' in available_dirs:
-                        movement_options.append('Move East')
-                    if 'south' in available_dirs:
-                        movement_options.append('Move South')
-                    if 'west' in available_dirs:
-                        movement_options.append('Move West')
+                    # Get available directions with hints for next move
+                    movement_options = game.world.get_directional_options_with_hints()
                     
                     # If there are special actions, show location event
                     if cell_content.value != 'empty':
@@ -175,21 +157,12 @@ def take_action():
                         }
             else:
                 # Movement failed (hit boundary)
-                available_dirs = game.world.get_available_directions()
-                options = []
-                if 'north' in available_dirs:
-                    options.append('Move North')
-                if 'east' in available_dirs:
-                    options.append('Move East')
-                if 'south' in available_dirs:
-                    options.append('Move South')
-                if 'west' in available_dirs:
-                    options.append('Move West')
+                movement_options = game.world.get_directional_options_with_hints()
                 
                 response = {
                     'message': message,
                     'event': 'map',
-                    'options': options
+                    'options': movement_options
                 }
     
     # Handle battle actions
@@ -313,17 +286,8 @@ def take_action():
                     'options': ['Attack', 'Defend', 'Flee']
                 }
             else:
-                # Get available directions for next move
-                available_dirs = game.world.get_available_directions()
-                movement_options = []
-                if 'north' in available_dirs:
-                    movement_options.append('Move North')
-                if 'east' in available_dirs:
-                    movement_options.append('Move East')
-                if 'south' in available_dirs:
-                    movement_options.append('Move South')
-                if 'west' in available_dirs:
-                    movement_options.append('Move West')
+                # Get available directions with hints for next move
+                movement_options = game.world.get_directional_options_with_hints()
                 
                 response = {
                     'message': interaction_result,
@@ -332,17 +296,8 @@ def take_action():
                 }
             
         elif choice == 4:  # Continue exploring
-            # Get available directions for next move
-            available_dirs = game.world.get_available_directions()
-            movement_options = []
-            if 'north' in available_dirs:
-                movement_options.append('Move North')
-            if 'east' in available_dirs:
-                movement_options.append('Move East')
-            if 'south' in available_dirs:
-                movement_options.append('Move South')
-            if 'west' in available_dirs:
-                movement_options.append('Move West')
+            # Get available directions with hints for next move
+            movement_options = game.world.get_directional_options_with_hints()
             
             response = {
                 'message': 'You decide to continue exploring.',
