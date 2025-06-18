@@ -43,25 +43,54 @@
                 
                 <!-- Battle section -->
                 <div class="battle-container" id="battle-container" style="display: none;">
-                    <div id="enemy-info" class="battle-info">
-                        <span id="enemy-name" class="enemy-name"></span>
-                        <div class="health-bar enemy-health-bar">
-                            <div class="health-bar-fill" id="enemy-health-bar"></div>
+                    <div class="battle-header">
+                        <div class="battle-title">
+                            <span class="battle-icon">⚔️</span>
+                            <span class="battle-text">COMBAT</span>
+                            <span class="battle-icon">⚔️</span>
                         </div>
-                        <span id="enemy-health-text"></span>
+                        <div class="battle-status">Battle in Progress</div>
                     </div>
                     
-                    <div id="player-battle-info" class="battle-info">
-                        <span class="player-name">Player</span>
-                        <div class="health-bar player-health-bar">
-                            <div class="health-bar-fill" id="player-battle-health-bar"></div>
+                    <div class="battle-participants">
+                        <div id="enemy-info" class="battle-info enemy-side">
+                            <div class="combatant-header">
+                                <span class="combatant-label">ENEMY</span>
+                            </div>
+                            <span id="enemy-name" class="enemy-name"></span>
+                            <div class="health-bar enemy-health-bar">
+                                <div class="health-bar-fill" id="enemy-health-bar"></div>
+                            </div>
+                            <span id="enemy-health-text"></span>
                         </div>
-                        <span id="player-battle-health-text"></span>
+                        
+                        <div class="battle-vs">VS</div>
+                        
+                        <div id="player-battle-info" class="battle-info player-side">
+                            <div class="combatant-header">
+                                <span class="combatant-label">PLAYER</span>
+                            </div>
+                            <span class="player-name">You</span>
+                            <div class="health-bar player-health-bar">
+                                <div class="health-bar-fill" id="player-battle-health-bar"></div>
+                            </div>
+                            <span id="player-battle-health-text"></span>
+                        </div>
                     </div>
                     
                     <!-- Battle log -->
-                    <div id="battle-log" class="battle-log">
-                        <p>Battle begins!</p>
+                    <div class="battle-log-container">
+                        <div class="battle-log-header">Battle Log</div>
+                        <div id="battle-log" class="battle-log">
+                            <p>Battle begins!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Battle actions -->
+                    <div class="battle-actions-container">
+                        <div class="battle-actions" id="battle-actions">
+                            <!-- Battle action buttons will be added here -->
+                        </div>
                     </div>
                 </div>
                 

@@ -39,9 +39,12 @@ def start_game():
     games[session_id] = GameManager()
     game = games[session_id]
     
+    # Get initial location description
+    location_desc = game.world.get_location_description(game.world.get_current_cell())
+    
     # Return initial game state
     return jsonify({
-        'message': 'Welcome to Text RPG!',
+        'message': f'Welcome to Text RPG!\\n\\nAn old man approaches you with a stick and 10 gold coins.\\n"Take these, young traveler. You\'ll need them on your journey."\\n\\n{location_desc}',
         'player': {
             'health': game.player.health,
             'max_health': game.player.max_health,
@@ -72,11 +75,23 @@ def take_action():
     
     # Handle first encounter
     if event == 'first_encounter':
+        # Get available directions for map navigation
+        available_dirs = game.world.get_available_directions()
+        map_options = []
+        if 'north' in available_dirs:
+            map_options.append('Move North')
+        if 'east' in available_dirs:
+            map_options.append('Move East')
+        if 'south' in available_dirs:
+            map_options.append('Move South')
+        if 'west' in available_dirs:
+            map_options.append('Move West')
+        
         if choice == 1:  # Reject
             response = {
                 'message': 'You reject the offering and move on. The old man looks disappointed as you walk away.',
                 'event': 'map',
-                'options': ['Move North', 'Move East', 'Move South', 'Move West']
+                'options': map_options
             }
         elif choice == 2:  # Take and move on
             game.player.add_gold(10)
@@ -85,7 +100,7 @@ def take_action():
             response = {
                 'message': 'You accept the offering and thank the old man. The old man smiles and wishes you good luck on your journey.',
                 'event': 'map',
-                'options': ['Move North', 'Move East', 'Move South', 'Move West']
+                'options': map_options
             }
         elif choice == 3:  # Take and fight
             game.player.add_gold(10)
@@ -105,27 +120,76 @@ def take_action():
     elif event == 'map':
         # All directional movements (1-4) are handled the same way
         if choice >= 1 and choice <= 4:
-            directions = ['North', 'East', 'South', 'West']
+            directions = ['north', 'east', 'south', 'west']
             direction = directions[choice - 1]
             
-            game.action_taken()
-            # 70% chance of battle
-            import random
-            if random.random() < 0.7:
-                response = {
-                    'message': f'You move {direction} and encounter a Goblin!',
-                    'event': 'battle',
-                    'enemy': {
-                        'name': 'Goblin',
-                        'health': 3
-                    },
-                    'options': ['Attack', 'Defend', 'Flee']
-                }
+            # Try to move in the world map
+            success, message = game.world.move_player(direction)
+            
+            if success:
+                game.action_taken()
+                
+                # Check what's at the new location
+                cell_content = game.world.get_current_cell()
+                
+                if cell_content.value == "enemy":
+                    response = {
+                        'message': f'{message}\\nYou encounter a Goblin!',
+                        'event': 'battle',
+                        'enemy': {
+                            'name': 'Goblin',
+                            'health': 3
+                        },
+                        'options': ['Attack', 'Defend', 'Flee']
+                    }
+                else:
+                    # Check if there are location-specific actions available
+                    cell_content = game.world.get_current_cell()
+                    location_actions = game.world.get_location_actions(cell_content)
+                    
+                    # Get available directions for next move
+                    available_dirs = game.world.get_available_directions()
+                    movement_options = []
+                    if 'north' in available_dirs:
+                        movement_options.append('Move North')
+                    if 'east' in available_dirs:
+                        movement_options.append('Move East')
+                    if 'south' in available_dirs:
+                        movement_options.append('Move South')
+                    if 'west' in available_dirs:
+                        movement_options.append('Move West')
+                    
+                    # If there are special actions, show location event
+                    if cell_content.value != 'empty':
+                        response = {
+                            'message': message,
+                            'event': 'location',
+                            'location_type': cell_content.value,
+                            'options': location_actions + ['Continue exploring']
+                        }
+                    else:
+                        response = {
+                            'message': message,
+                            'event': 'map',
+                            'options': movement_options
+                        }
             else:
+                # Movement failed (hit boundary)
+                available_dirs = game.world.get_available_directions()
+                options = []
+                if 'north' in available_dirs:
+                    options.append('Move North')
+                if 'east' in available_dirs:
+                    options.append('Move East')
+                if 'south' in available_dirs:
+                    options.append('Move South')
+                if 'west' in available_dirs:
+                    options.append('Move West')
+                
                 response = {
-                    'message': f'You move {direction} but find nothing of interest.',
+                    'message': message,
                     'event': 'map',
-                    'options': ['Move North', 'Move East', 'Move South', 'Move West']
+                    'options': options
                 }
     
     # Handle battle actions
@@ -224,6 +288,67 @@ def take_action():
                         },
                         'options': ['Attack', 'Defend', 'Flee']
                     }
+    
+    # Handle location interactions
+    elif event == 'location':
+        location_type = data.get('location_type')
+        
+        if choice <= 3:  # Location-specific actions
+            # Handle the interaction
+            old_gold = game.player.gold
+            old_health = game.player.health
+            
+            # Call the interaction method with the choice
+            interaction_result = game.handle_location_interaction(choice)
+            
+            # Check if this triggers a battle (enemy attack)
+            if location_type == 'enemy' and choice == 1:
+                response = {
+                    'message': interaction_result,
+                    'event': 'battle',
+                    'enemy': {
+                        'name': 'Goblin',
+                        'health': 3
+                    },
+                    'options': ['Attack', 'Defend', 'Flee']
+                }
+            else:
+                # Get available directions for next move
+                available_dirs = game.world.get_available_directions()
+                movement_options = []
+                if 'north' in available_dirs:
+                    movement_options.append('Move North')
+                if 'east' in available_dirs:
+                    movement_options.append('Move East')
+                if 'south' in available_dirs:
+                    movement_options.append('Move South')
+                if 'west' in available_dirs:
+                    movement_options.append('Move West')
+                
+                response = {
+                    'message': interaction_result,
+                    'event': 'map',
+                    'options': movement_options
+                }
+            
+        elif choice == 4:  # Continue exploring
+            # Get available directions for next move
+            available_dirs = game.world.get_available_directions()
+            movement_options = []
+            if 'north' in available_dirs:
+                movement_options.append('Move North')
+            if 'east' in available_dirs:
+                movement_options.append('Move East')
+            if 'south' in available_dirs:
+                movement_options.append('Move South')
+            if 'west' in available_dirs:
+                movement_options.append('Move West')
+            
+            response = {
+                'message': 'You decide to continue exploring.',
+                'event': 'map',
+                'options': movement_options
+            }
     
     # Handle death
     elif event == 'death':

@@ -9,6 +9,7 @@ let gameState = {
 const currentMessage = document.getElementById('current-message');
 const battleContainer = document.getElementById('battle-container');
 const battleLog = document.getElementById('battle-log');
+const battleActions = document.getElementById('battle-actions');
 const actionButtons = document.getElementById('action-buttons');
 const compassContainer = document.getElementById('compass-container');
 const startButton = document.getElementById('start-button');
@@ -50,6 +51,14 @@ function handleKeyPress(event) {
     if (event.key >= '1' && event.key <= '9') {
         const buttonIndex = parseInt(event.key) - 1;
         
+        // If we're in battle mode, use battle actions
+        if (gameState.event === 'battle' && battleActions.children.length > 0) {
+            if (buttonIndex < battleActions.children.length) {
+                battleActions.children[buttonIndex].click();
+            }
+            return;
+        }
+        
         // If we're in map mode and compass is visible
         if (gameState.event === 'map' && compassContainer.style.display !== 'none') {
             if (buttonIndex === 0) compassNorth.click();
@@ -60,7 +69,7 @@ function handleKeyPress(event) {
         }
         
         // Otherwise use regular action buttons
-        const buttons = document.querySelectorAll('.action-button');
+        const buttons = document.querySelectorAll('#action-buttons .action-button');
         if (buttonIndex < buttons.length) {
             buttons[buttonIndex].click();
         }
@@ -111,7 +120,12 @@ function updateGameState(data) {
     }
     
     // Update action buttons or compass based on event
-    if (data.event === 'map' && data.options && 
+    if (data.event === 'battle') {
+        // Show battle actions in battle container
+        hideCompass();
+        hideActionButtons();
+        updateBattleActions();
+    } else if (data.event === 'map' && data.options && 
         data.options.includes('Move North') && 
         data.options.includes('Move East') && 
         data.options.includes('Move South') && 
@@ -119,9 +133,11 @@ function updateGameState(data) {
         // Show compass for map navigation
         showCompass();
         hideActionButtons();
+        hideBattleActions();
     } else {
         // Show regular action buttons for other events
         hideCompass();
+        hideBattleActions();
         updateActionButtons();
     }
 }
@@ -401,9 +417,14 @@ function showBattleInfo(enemy) {
     // Only clear battle log and add initial message if this is a new battle
     // Check if battle log is empty or only has the initial "begins" message
     if (battleLog.children.length === 0) {
+        // Clear any existing content first
+        while (battleLog.firstChild) {
+            battleLog.removeChild(battleLog.firstChild);
+        }
+        
         // Add initial battle message for new battles
         const p = document.createElement('p');
-        p.textContent = `Battle with ${enemy.name} begins!`;
+        p.textContent = `⚔️ Battle with ${enemy.name} begins!`;
         battleLog.appendChild(p);
     }
 }
@@ -465,6 +486,45 @@ function updateActionButtons() {
         
         actionButtons.appendChild(button);
     });
+}
+
+// Update battle actions in battle container
+function updateBattleActions() {
+    // Clear existing battle actions
+    hideBattleActions();
+    
+    // Add battle action buttons
+    gameState.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.classList.add('action-button');
+        
+        // Create key span
+        const keySpan = document.createElement('span');
+        keySpan.classList.add('action-key');
+        keySpan.textContent = index + 1;
+        
+        // Create text span
+        const textSpan = document.createElement('span');
+        textSpan.classList.add('action-text');
+        textSpan.textContent = option;
+        
+        // Add spans to button
+        button.appendChild(keySpan);
+        button.appendChild(textSpan);
+        
+        button.addEventListener('click', () => {
+            takeAction(index + 1);
+        });
+        
+        battleActions.appendChild(button);
+    });
+}
+
+// Hide battle actions
+function hideBattleActions() {
+    while (battleActions.firstChild) {
+        battleActions.removeChild(battleActions.firstChild);
+    }
 }
 
 // Take an action
