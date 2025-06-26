@@ -95,7 +95,7 @@ function startGame() {
 }
 
 // Add message to battle log (only one message at a time)
-function addBattleLogMessage(message) {
+function addBattleLogMessage(message, isPlayerMessage = true) {
     // Clear existing messages
     while (battleLog.firstChild) {
         battleLog.removeChild(battleLog.firstChild);
@@ -104,8 +104,15 @@ function addBattleLogMessage(message) {
     // Add new message
     const p = document.createElement('p');
     p.textContent = message;
-    battleLog.appendChild(p);
     
+    // Add appropriate class for alignment
+    if (isPlayerMessage) {
+        p.classList.add('player-message');
+    } else {
+        p.classList.add('enemy-message');
+    }
+    
+    battleLog.appendChild(p);
     battleLog.scrollTop = battleLog.scrollHeight;
 }
 
@@ -135,7 +142,7 @@ function executePlayerTurn(data, choice) {
     // 0.25s delay, then show battle log
     setTimeout(() => {
         if (playerActionLine) {
-            addBattleLogMessage(playerActionLine);
+            addBattleLogMessage(playerActionLine, true);
         }
         
         // 0.25s delay, then play attack animation
@@ -198,7 +205,7 @@ function executeEnemyTurn(data) {
         // 0.25s delay, then show enemy battle log
         setTimeout(() => {
             if (enemyActionLine) {
-                addBattleLogMessage(enemyActionLine);
+                addBattleLogMessage(enemyActionLine, false);
             }
             
             // 0.25s delay, then play enemy attack animation
@@ -439,6 +446,7 @@ function addCurrentMessage(message) {
         if (line.trim()) {
             const p = document.createElement('p');
             p.textContent = line;
+            p.style.textTransform = 'none'; // Ensure text is not transformed
             currentMessage.appendChild(p);
         }
     });
@@ -656,26 +664,30 @@ let battleAnimating = false;
 function triggerSkillAnimation(actionText, isPlayerAction = true) {
     const lowerAction = actionText.toLowerCase();
     let animationClass = '';
+    let hpAnimationClass = '';
     let targetElement = null;
     
     if (lowerAction.includes('attack') || lowerAction.includes('hit') || lowerAction.includes('strike')) {
         animationClass = 'skill-animation-attack';
+        hpAnimationClass = 'hp-animation-attack';
         // Attack animations target the opponent's health bar
         targetElement = isPlayerAction ? document.getElementById('enemy-info') : document.getElementById('player-battle-info');
     } else if (lowerAction.includes('heal') || lowerAction.includes('restore') || lowerAction.includes('recover')) {
         animationClass = 'skill-animation-heal';
+        hpAnimationClass = 'hp-animation-heal';
         // Heal animations target the caster's health bar
         targetElement = isPlayerAction ? document.getElementById('player-battle-info') : document.getElementById('enemy-info');
     } else if (lowerAction.includes('defend') || lowerAction.includes('block') || lowerAction.includes('guard')) {
         animationClass = 'skill-animation-defend';
+        hpAnimationClass = 'hp-animation-defend';
         // Defend animations target the caster's health bar
         targetElement = isPlayerAction ? document.getElementById('player-battle-info') : document.getElementById('enemy-info');
     }
     
     if (animationClass && targetElement) {
-        targetElement.classList.add(animationClass);
+        targetElement.classList.add(animationClass, hpAnimationClass);
         setTimeout(() => {
-            targetElement.classList.remove(animationClass);
+            targetElement.classList.remove(animationClass, hpAnimationClass);
         }, 1500);
     }
 }

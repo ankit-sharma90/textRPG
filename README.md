@@ -19,6 +19,8 @@ A dark fantasy text-based RPG game with battles, loot collection, and a day/nigh
 - Keyboard shortcuts displayed directly on action buttons
 - Dark fantasy theme with appropriate color scheme
 - Responsive design for different screen sizes
+- Improved battle UI with battle log positioned between enemy and player sections
+- Limited battle log to show only the latest 2 messages for better readability
 
 ## How to Run
 
@@ -59,8 +61,9 @@ python main.py
 
 - You start with a first encounter with an NPC who offers you gold and a weapon
 - You can choose to accept or reject the offering, or even fight the NPC
-- After the first encounter, you can explore the world map
-- You'll encounter enemies to battle
+- After the first encounter, you can explore the world map using compass-style directional controls
+- You'll encounter enemies to battle in a turn-based combat system
+- Battles feature an intuitive UI with enemy and player health bars separated by a battle log
 - Collect loot and gold from defeated enemies
 - The game has a day/night cycle that changes every 3 actions
 - If you die, you can choose to start over or become a vampire (with a daytime penalty)
@@ -70,10 +73,11 @@ python main.py
 ### Web Version
 - Click on action buttons to make choices
 - Use number keys (1-9) as keyboard shortcuts for actions (displayed on buttons)
+- Navigate the world map using compass-style directional controls (North, East, South, West)
 - The UI theme adjusts based on the time of day (day/night)
-- Game log shows important events
-- Battle log shows combat results
-- Current action shows immediate feedback
+- Battle UI displays enemy and player information with the battle log positioned between them
+- Battle log shows the latest 2 combat messages for better readability
+- Current action shows immediate feedback with visual animations for attacks and other actions
 
 ### Terminal Version
 The game is controlled through text input. When prompted, enter the number corresponding to your choice.
@@ -84,3 +88,17 @@ The game is controlled through text input. When prompted, enter the number corre
 - Browser playable
 - Persistent sessions
 - Dark fantasy theme
+
+## Running Tests
+
+To run all tests at once:
+
+```bash
+python run_tests.py
+```
+
+To run tests with verbose output:
+
+```bash
+python run_tests.py -v
+```

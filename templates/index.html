@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text RPG</title>
+    <title>Medieval Text RPG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="dark-fantasy-theme">
     <div class="container">
         <header>
-            <h1>Text RPG</h1>
+            <h1>⚔️ Medieval Quest ⚔️</h1>
         </header>
         
         <div class="game-container">
@@ -21,15 +24,15 @@
                     <span id="health">10/10</span>
                 </div>
                 <div class="status-item">
-                    <span class="label">Gold:</span>
+                    <span class="label">⚜️ Gold:</span>
                     <span id="gold">0</span>
                 </div>
                 <div class="status-item">
-                    <span class="label">Time:</span>
+                    <span class="label">🕐 Time:</span>
                     <span id="time">Day</span>
                 </div>
                 <div class="status-item" id="vampire-status" style="display: none;">
-                    <span>Vampire</span>
+                    <span>🧛 Vampire</span>
                 </div>
             </div>
             
@@ -37,26 +40,14 @@
                 <!-- Current message section -->
                 <div class="current-message-container">
                     <div id="current-message" class="message-box">
-                        <p>Welcome to Text RPG! Click "Start Game" to begin your adventure.</p>
+                        <p>Welcome to Medieval Quest! Click "Begin Adventure" to start your journey.</p>
                     </div>
                 </div>
                 
                 <!-- Battle section -->
                 <div class="battle-container" id="battle-container" style="display: none;">
-                    <div class="battle-header">
-                        <div class="battle-title">
-                            <span class="battle-icon">⚔️</span>
-                            <span class="battle-text">COMBAT</span>
-                            <span class="battle-icon">⚔️</span>
-                        </div>
-                        <div class="battle-status">Battle in Progress</div>
-                    </div>
-                    
                     <div class="battle-participants">
-                        <div id="enemy-info" class="battle-info enemy-side">
-                            <div class="combatant-header">
-                                <span class="combatant-label">ENEMY</span>
-                            </div>
+                        <div id="enemy-info" class="battle-info">
                             <span id="enemy-name" class="enemy-name"></span>
                             <div class="health-bar enemy-health-bar">
                                 <div class="health-bar-fill" id="enemy-health-bar"></div>
@@ -64,13 +55,8 @@
                             <span id="enemy-health-text"></span>
                         </div>
                         
-                        <div class="battle-vs">VS</div>
-                        
-                        <div id="player-battle-info" class="battle-info player-side">
-                            <div class="combatant-header">
-                                <span class="combatant-label">PLAYER</span>
-                            </div>
-                            <span class="player-name">You</span>
+                        <div id="player-battle-info" class="battle-info">
+                            <span class="player-name">🛡️ You</span>
                             <div class="health-bar player-health-bar">
                                 <div class="health-bar-fill" id="player-battle-health-bar"></div>
                             </div>
@@ -80,7 +66,6 @@
                     
                     <!-- Battle log -->
                     <div class="battle-log-container">
-                        <div class="battle-log-header">Battle Log</div>
                         <div id="battle-log" class="battle-log">
                             <p>Battle begins!</p>
                         </div>
@@ -99,7 +84,7 @@
                     <div class="action-buttons" id="action-buttons">
                         <button id="start-button" class="action-button">
                             <span class="action-key">1</span>
-                            <span class="action-text">Start Game</span>
+                            <span class="action-text">⚔️ Begin Adventure</span>
                         </button>
                     </div>
                     
@@ -107,23 +92,23 @@
                     <div class="compass-container" id="compass-container" style="display: none;">
                         <button class="compass-button north" id="compass-north">
                             <span class="action-key">1</span>
-                            <span class="direction-arrow">↑</span>
-                            <span class="direction-text">Move North</span>
+                            <span class="direction-arrow">⬆️</span>
+                            <span class="direction-text">Journey North</span>
                         </button>
                         <button class="compass-button east" id="compass-east">
                             <span class="action-key">2</span>
-                            <span class="direction-arrow">→</span>
-                            <span class="direction-text">Move East</span>
+                            <span class="direction-arrow">➡️</span>
+                            <span class="direction-text">Journey East</span>
                         </button>
                         <button class="compass-button south" id="compass-south">
                             <span class="action-key">3</span>
-                            <span class="direction-arrow">↓</span>
-                            <span class="direction-text">Move South</span>
+                            <span class="direction-arrow">⬇️</span>
+                            <span class="direction-text">Journey South</span>
                         </button>
                         <button class="compass-button west" id="compass-west">
                             <span class="action-key">4</span>
-                            <span class="direction-arrow">←</span>
-                            <span class="direction-text">Move West</span>
+                            <span class="direction-arrow">⬅️</span>
+                            <span class="direction-text">Journey West</span>
                         </button>
                     </div>
                 </div>
@@ -131,7 +116,7 @@
         </div>
         
         <footer>
-            <p>Text RPG Game</p>
+            <p>🏰 Medieval Quest RPG 🏰</p>
         </footer>
     </div>
     

@@ -3,14 +3,18 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    text-transform: none !important;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Times New Roman', serif;
     line-height: 1.6;
-    color: #d4d4d4;
-    background-color: #1a1a1a;
+    color: #c0a080;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+    background-attachment: fixed;
     transition: all 0.5s ease;
+    text-transform: none !important;
+    font-variant: normal !important;
 }
 
 .container {
@@ -28,33 +32,39 @@ header {
 }
 
 header h1 {
+    font-family: 'Times New Roman', serif;
     font-size: 2.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    color: #c0a080;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    color: #8b6914;
     letter-spacing: 2px;
+    font-weight: normal;
+    text-transform: none !important;
+    font-variant: normal !important;
 }
 
 .game-container {
-    background-color: #252525;
+    background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
     border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
     padding: 20px;
     flex: 1;
     display: flex;
     flex-direction: column;
-    border: 1px solid #3a3a3a;
+    border: 1px solid #4a4a4a;
+    position: relative;
 }
 
 .status-bar {
     display: flex;
     justify-content: space-between;
-    background-color: #1e1e1e;
-    padding: 12px;
-    border-radius: 5px;
+    background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+    padding: 15px;
+    border-radius: 8px;
     margin-bottom: 20px;
     flex-wrap: wrap;
-    border: 1px solid #3a3a3a;
+    border: 1px solid #4a4a4a;
     align-items: center;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .status-item {
@@ -71,9 +81,10 @@ header h1 {
 }
 
 .label {
-    font-weight: bold;
-    color: #c0a080;
+    font-weight: normal;
+    color: #8b6914;
     margin-right: 5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .game-content {
@@ -110,30 +121,35 @@ header h1 {
 
 /* Message containers */
 .current-message-container, .action-buttons-container {
-    background-color: #2a2a2a;
-    border-radius: 5px;
-    padding: 15px;
-    border: 1px solid #3a3a3a;
+    background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+    border-radius: 8px;
+    padding: 18px;
+    border: 1px solid #4a4a4a;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .message-box {
     min-height: 100px;
     max-height: 200px;
     overflow-y: auto;
-    padding: 10px;
-    background-color: #1e1e1e;
-    border-radius: 5px;
+    padding: 15px;
+    background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%);
+    border-radius: 8px;
+    border: 1px solid #4a4a4a;
     scrollbar-width: thin;
-    scrollbar-color: #3a3a3a #1e1e1e;
+    scrollbar-color: #4a4a4a #1a1a1a;
 }
 
 .message-box p {
-    margin-bottom: 8px;
-    padding: 5px;
-    border-radius: 3px;
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 5px;
     color: #c0a080;
-    border-left: 3px solid #c0a080;
-    padding-left: 8px;
+    border-left: 4px solid #8b6914;
+    padding-left: 12px;
+    background: rgba(139, 105, 20, 0.1);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    text-transform: none !important;
 }
 
 /* Success Screen Styles */
@@ -228,28 +244,24 @@ header h1 {
 
 /* Battle Container Styles */
 .battle-container {
-    background-color: #2a2a2a;
-    border: 1px solid #3a3a3a;
-    border-radius: 5px;
-    padding: 15px;
-    margin: 15px 0;
-}
-
-
-
-/* Battle Participants */
-.battle-participants {
+    background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+    border: 2px solid #4a4a4a;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
+/* Battle Info Styles */
 .battle-info {
-    padding: 10px;
-    background-color: #1e1e1e;
-    border: 1px solid #3a3a3a;
-    border-radius: 5px;
+    padding: 15px;
+    background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%);
+    border: 1px solid #4a4a4a;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 
@@ -270,27 +282,52 @@ header h1 {
 
 /* Battle Log Container */
 .battle-log-container {
-    background-color: #1e1e1e;
-    border: 1px solid #3a3a3a;
-    border-radius: 5px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    position: relative;
+    padding: 10px 0;
 }
 
 .battle-log {
-    padding: 15px;
-    min-height: 80px;
-    max-height: 150px;
+    padding: 0;
+    min-height: 40px;
+    max-height: 80px;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: #3a3a3a #1e1e1e;
+    scrollbar-color: #4a4a4a transparent;
+    text-align: center;
 }
 
 .battle-log p {
-    margin-bottom: 8px;
+    margin-bottom: 5px;
     color: #c08080;
-    border-left: 3px solid #c08080;
-    padding-left: 10px;
-    font-size: 0.95rem;
-    line-height: 1.4;
+    font-size: 0.9rem;
+    line-height: 1.3;
+    padding: 8px 15px;
+    border-radius: 15px;
+    background: rgba(192, 128, 128, 0.1);
+    border: 1px solid rgba(192, 128, 128, 0.2);
+    display: inline-block;
+    max-width: 80%;
+}
+
+.battle-log p.enemy-message {
+    text-align: left;
+    margin-right: auto;
+    margin-left: 0;
+    color: #cd5c5c;
+    background: rgba(205, 92, 92, 0.1);
+    border-color: rgba(205, 92, 92, 0.2);
+}
+
+.battle-log p.player-message {
+    text-align: right;
+    margin-left: auto;
+    margin-right: 0;
+    color: #9acd32;
+    background: rgba(154, 205, 50, 0.1);
+    border-color: rgba(154, 205, 50, 0.2);
 }
 
 /* Battle Actions */
@@ -336,24 +373,29 @@ header h1 {
 }
 
 .action-button {
-    padding: 12px 20px;
-    background-color: #3a3a3a;
-    color: #d4d4d4;
-    border: 1px solid #505050;
-    border-radius: 5px;
+    padding: 15px 25px;
+    background: linear-gradient(145deg, #4a4a4a 0%, #3a3a3a 100%);
+    color: #c0a080;
+    border: 1px solid #8b6914;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
+    font-weight: normal;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     position: relative;
     width: 100%;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    text-transform: none;
 }
 
 .action-button:hover {
-    background-color: #505050;
+    background: linear-gradient(145deg, #5a5a5a 0%, #4a4a4a 100%);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    border-color: #8b6914;
 }
 
 .action-button:active {
@@ -363,19 +405,22 @@ header h1 {
 
 .action-key {
     display: inline-block;
-    background-color: #c0a080;
-    color: #1a1a1a;
-    width: 24px;
-    height: 24px;
+    background: linear-gradient(145deg, #8b6914 0%, #6b5010 100%);
+    color: #e8dcc0;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     text-align: center;
-    line-height: 24px;
+    line-height: 26px;
     margin-right: 10px;
-    font-weight: bold;
+    font-weight: normal;
+    border: 1px solid #8b6914;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .action-text {
     flex: 1;
+    text-transform: none !important;
 }
 
 /* Compass Navigation */
@@ -440,19 +485,19 @@ header h1 {
 /* Skill Animations */
 @keyframes attack-flash {
     0% { background-color: #2a2a2a; }
-    50% { background-color: #4a2020; box-shadow: 0 0 10px rgba(192, 64, 64, 0.3); }
+    50% { background-color: #6a2020; box-shadow: 0 0 20px rgba(220, 20, 20, 0.6); }
     100% { background-color: #2a2a2a; }
 }
 
 @keyframes heal-glow {
     0% { background-color: #2a2a2a; }
-    50% { background-color: #204a20; box-shadow: 0 0 10px rgba(64, 192, 64, 0.3); }
+    50% { background-color: #206a20; box-shadow: 0 0 20px rgba(20, 220, 20, 0.6); }
     100% { background-color: #2a2a2a; }
 }
 
 @keyframes defend-pulse {
     0% { background-color: #2a2a2a; border-color: #3a3a3a; }
-    50% { background-color: #202a4a; border-color: #4a6a8a; box-shadow: 0 0 8px rgba(64, 128, 192, 0.2); }
+    50% { background-color: #20206a; border-color: #6a6aaa; box-shadow: 0 0 15px rgba(20, 20, 220, 0.5); }
     100% { background-color: #2a2a2a; border-color: #3a3a3a; }
 }
 
@@ -466,6 +511,37 @@ header h1 {
 
 .skill-animation-defend {
     animation: defend-pulse 0.7s ease-in-out;
+}
+
+/* HP Container Background Animations */
+@keyframes hp-attack-flash {
+    0% { background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%); }
+    50% { background: linear-gradient(145deg, #4a1a1a 0%, #3a0f0f 100%); }
+    100% { background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%); }
+}
+
+@keyframes hp-heal-glow {
+    0% { background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%); }
+    50% { background: linear-gradient(145deg, #1a4a1a 0%, #0f3a0f 100%); }
+    100% { background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%); }
+}
+
+@keyframes hp-defend-pulse {
+    0% { background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%); }
+    50% { background: linear-gradient(145deg, #1a1a4a 0%, #0f0f3a 100%); }
+    100% { background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%); }
+}
+
+.hp-animation-attack {
+    animation: hp-attack-flash 0.6s ease-in-out;
+}
+
+.hp-animation-heal {
+    animation: hp-heal-glow 0.8s ease-in-out;
+}
+
+.hp-animation-defend {
+    animation: hp-defend-pulse 0.7s ease-in-out;
 }
 
 /* Button Click Animation */
@@ -571,18 +647,24 @@ footer {
     }
     
     /* Battle container responsive adjustments */
-    .battle-participants {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .battle-vs {
-        font-size: 1.5rem;
-        margin: 10px 0;
+    .battle-container {
+        gap: 12px; /* Slightly reduced gap on mobile */
     }
     
     .battle-info {
-        min-height: 100px;
+        min-height: auto; /* Allow height to be determined by content */
+        padding: 8px; /* Slightly reduced padding */
+    }
+    
+    .battle-log {
+        min-height: 50px; /* Reduced minimum height on mobile */
+        max-height: 100px; /* Reduced maximum height on mobile */
+        padding: 10px; /* Slightly reduced padding */
+    }
+    
+    .battle-log p {
+        font-size: 0.9rem; /* Slightly smaller font on mobile */
+        margin-bottom: 6px; /* Reduced spacing between log entries */
     }
     
     .battle-text {
