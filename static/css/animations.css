@@ -1,0 +1,118 @@
+/* Player Animation Styles */
+.player-sprite {
+    width: 64px;
+    height: 64px;
+    background-image: url('../images/adventurer_sprite_sheet_v1.1.png');
+    background-repeat: no-repeat;
+    display: inline-block;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+/* Idle Animation - Row 1 */
+.player-idle {
+    background-position: 0 0;
+    animation: idle-animation 2s steps(4) infinite;
+}
+
+@keyframes idle-animation {
+    0% { background-position: 0 0; }
+    25% { background-position: -64px 0; }
+    50% { background-position: -128px 0; }
+    75% { background-position: -192px 0; }
+    100% { background-position: 0 0; }
+}
+
+/* Attack Animation - Row 2 */
+.player-attack {
+    background-position: 0 -64px;
+    animation: attack-animation 0.6s steps(6) forwards;
+}
+
+@keyframes attack-animation {
+    0% { background-position: 0 -64px; }
+    16.67% { background-position: -64px -64px; }
+    33.33% { background-position: -128px -64px; }
+    50% { background-position: -192px -64px; }
+    66.67% { background-position: -256px -64px; }
+    83.33% { background-position: -320px -64px; }
+    100% { background-position: 0 -64px; }
+}
+
+/* Hurt Animation - Row 3 */
+.player-hurt {
+    background-position: 0 -128px;
+    animation: hurt-animation 0.4s steps(3) forwards;
+}
+
+@keyframes hurt-animation {
+    0% { background-position: 0 -128px; }
+    33.33% { background-position: -64px -128px; }
+    66.67% { background-position: -128px -128px; }
+    100% { background-position: 0 -128px; }
+}
+
+/* Death Animation - Row 4 */
+.player-death {
+    background-position: 0 -192px;
+    animation: death-animation 1s steps(7) forwards;
+}
+
+@keyframes death-animation {
+    0% { background-position: 0 -192px; }
+    14.29% { background-position: -64px -192px; }
+    28.57% { background-position: -128px -192px; }
+    42.86% { background-position: -192px -192px; }
+    57.14% { background-position: -256px -192px; }
+    71.43% { background-position: -320px -192px; }
+    85.71% { background-position: -384px -192px; }
+    100% { background-position: -384px -192px; }
+}
+
+/* Victory Animation - Row 5 */
+.player-victory {
+    background-position: 0 -256px;
+    animation: victory-animation 1.2s steps(6) infinite;
+}
+
+@keyframes victory-animation {
+    0% { background-position: 0 -256px; }
+    16.67% { background-position: -64px -256px; }
+    33.33% { background-position: -128px -256px; }
+    50% { background-position: -192px -256px; }
+    66.67% { background-position: -256px -256px; }
+    83.33% { background-position: -320px -256px; }
+    100% { background-position: 0 -256px; }
+}
+
+/* Player Animation Container */
+.player-animation-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+    height: 80px;
+}
+
+/* Battle specific player sprite positioning */
+.battle-player-sprite {
+    margin-left: 20px;
+}
+
+/* Animation triggers */
+.animate-attack .player-sprite {
+    animation: attack-animation 0.6s steps(6) forwards;
+}
+
+.animate-hurt .player-sprite {
+    animation: hurt-animation 0.4s steps(3) forwards;
+}
+
+.animate-victory .player-sprite {
+    animation: victory-animation 1.2s steps(6) infinite;
+}
+
+.animate-death .player-sprite {
+    animation: death-animation 1s steps(7) forwards;
+}

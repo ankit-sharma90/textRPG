@@ -121,11 +121,11 @@ header h1 {
 
 /* Message containers */
 .current-message-container, .action-buttons-container {
-    background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+    /* background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%); */
     border-radius: 8px;
     padding: 18px;
-    border: 1px solid #4a4a4a;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    /* border: 1px solid #4a4a4a; */
+    /* box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); */
 }
 
 .message-box {
@@ -133,9 +133,9 @@ header h1 {
     max-height: 200px;
     overflow-y: auto;
     padding: 15px;
-    background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%);
+    /* background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%); */
     border-radius: 8px;
-    border: 1px solid #4a4a4a;
+    /* border: 1px solid #4a4a4a; */
     scrollbar-width: thin;
     scrollbar-color: #4a4a4a #1a1a1a;
 }
@@ -145,11 +145,11 @@ header h1 {
     padding: 8px;
     border-radius: 5px;
     color: #c0a080;
-    border-left: 4px solid #8b6914;
+    /* border-left: 4px solid #8b6914; */
     padding-left: 12px;
-    background: rgba(139, 105, 20, 0.1);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    text-transform: none !important;
+    /* background: rgba(139, 105, 20, 0.1); */
+    /* text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); */
+    /* text-transform: none !important; */
 }
 
 /* Success Screen Styles */
@@ -569,7 +569,7 @@ footer {
 
 .dark-fantasy-theme.day .game-container {
     background-color: #302b25;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    /* box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); */
 }
 
 .dark-fantasy-theme.day .status-bar {
