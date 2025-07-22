@@ -25,11 +25,40 @@ const enemyHealthText = document.getElementById('enemy-health-text');
 const playerBattleHealthBar = document.getElementById('player-battle-health-bar');
 const playerBattleHealthText = document.getElementById('player-battle-health-text');
 
+// Map elements
+const mapContainer = document.getElementById('map-container');
+const mapViewport = document.getElementById('map-viewport');
+const worldNameDisplay = document.getElementById('world-name');
+const coordinatesDisplay = document.getElementById('coordinates');
+
+// Map elements
+
+// Animation speed toggle elements
+const animationSpeedToggle = document.getElementById('animation-speed-toggle');
+const speedIndicator = document.getElementById('speed-indicator');
+
 // Compass buttons
 const compassNorth = document.getElementById('compass-north');
 const compassEast = document.getElementById('compass-east');
 const compassSouth = document.getElementById('compass-south');
 const compassWest = document.getElementById('compass-west');
+
+// Animation speed settings
+let currentAnimationSpeed = 1; // Default to Fast (index 1)
+const ANIMATION_SPEEDS = [
+    { name: '🚀 Super Fast', damageTime: '0.8s', iconTime: '0.5s' },
+    { name: '⚡ Fast', damageTime: '1.2s', iconTime: '0.8s' },
+    { name: '🎯 Normal', damageTime: '1.8s', iconTime: '1.2s' },
+    { name: '🐌 Slow', damageTime: '2.5s', iconTime: '1.8s' },
+    { name: '🐢 Extra Slow', damageTime: '3.2s', iconTime: '2.2s' }
+];
+
+// Icon variations for different action types
+const ICON_VARIATIONS = {
+    attack: ['💢'],  // Impact symbol - clear and universal
+    defend: ['🛡', '🚧', '⛨'],  // Shield, barrier, guard
+    heal: ['💚', '💖', '✨']     // Heart, sparkle heart, stars
+};
 
 // Initialize the game
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,8 +70,17 @@ document.addEventListener('DOMContentLoaded', () => {
     compassSouth.addEventListener('click', () => takeAction(3));
     compassWest.addEventListener('click', () => takeAction(4));
     
+    // Add animation speed toggle listener
+    if (animationSpeedToggle) {
+        animationSpeedToggle.addEventListener('click', toggleAnimationSpeed);
+    }
+    
     // Add keyboard shortcuts
     document.addEventListener('keydown', handleKeyPress);
+    
+    // Initialize animation speed display and apply default speed
+    updateSpeedIndicator();
+    applyAnimationSpeed();
 });
 
 // Handle keyboard shortcuts
@@ -93,6 +131,9 @@ function startGame() {
         addCurrentMessage('Error starting game. Please try again.');
     });
 }
+
+// Battle animation state
+let battleAnimating = false;
 
 // Add message to battle log (only one message at a time)
 function addBattleLogMessage(message, isPlayerMessage = true) {
@@ -147,11 +188,19 @@ function executePlayerTurn(data, choice) {
         
         // 0.25s delay, then play attack animation
         setTimeout(() => {
+            let animationDuration = 250; // Default fallback
             if (choice <= gameState.options.length) {
-                triggerSkillAnimation(gameState.options[choice - 1], true);
+                animationDuration = triggerSkillAnimation(gameState.options[choice - 1], true, playerActionLine);
             }
             
-            // 0.25s delay, then update enemy health
+            // 4. Update health bar value when damage number is halfway through
+            const currentSpeed = ANIMATION_SPEEDS[currentAnimationSpeed];
+            const iconDuration = parseFloat(currentSpeed.iconTime) * 1000;
+            const damageDuration = parseFloat(currentSpeed.damageTime) * 1000;
+            const iconHalfway = iconDuration / 2;
+            const damageHalfway = damageDuration / 2;
+            const healthBarUpdateDelay = iconHalfway + damageHalfway;
+            
             setTimeout(() => {
                 if (data.enemy) {
                     gameState.enemy = data.enemy;
@@ -160,6 +209,10 @@ function executePlayerTurn(data, choice) {
                     enemyHealthBar.style.width = `${healthPercentage}%`;
                     enemyHealthText.textContent = `${data.enemy.health} HP`;
                 }
+            }, healthBarUpdateDelay);
+            
+            // Wait for all animations to complete before continuing
+            setTimeout(() => {
                 
                 // Check if battle continues
                 if (data.event === 'battle' && data.enemy && data.enemy.health > 0) {
@@ -169,7 +222,7 @@ function executePlayerTurn(data, choice) {
                     setBattleActionsEnabled(true);
                     updateGameState(data);
                 }
-            }, 250);
+            }, animationDuration);
         }, 250);
     }, 250);
 }
@@ -210,15 +263,25 @@ function executeEnemyTurn(data) {
             
             // 0.25s delay, then play enemy attack animation
             setTimeout(() => {
-                triggerSkillAnimation('attack', false);
+                const animationDuration = triggerSkillAnimation('attack', false, enemyActionLine);
                 
-                // 0.25s delay, then update player health
+                // 4. Update player health bar value when damage number is halfway through
+                const currentSpeed = ANIMATION_SPEEDS[currentAnimationSpeed];
+                const iconDuration = parseFloat(currentSpeed.iconTime) * 1000;
+                const damageDuration = parseFloat(currentSpeed.damageTime) * 1000;
+                const iconHalfway = iconDuration / 2;
+                const damageHalfway = damageDuration / 2;
+                const healthBarUpdateDelay = iconHalfway + damageHalfway;
+                
                 setTimeout(() => {
                     updatePlayerStatus(data.player);
-                    
+                }, healthBarUpdateDelay);
+                
+                // Wait for all animations to complete before continuing
+                setTimeout(() => {
                     battleAnimating = false;
                     setBattleActionsEnabled(true);
-                }, 250);
+                }, animationDuration);
             }, 250);
         }, 250);
     }, 500);
@@ -275,27 +338,8 @@ function updateGameState(data) {
 // Process message based on event type
 function processMessage(message, event) {
     if (event === 'battle') {
-        // In battle mode, add all messages to the battle log
-        // and clear the current message area
-        
-        const lines = message.split('\n');
-        
-        // Add each line to the battle log
-        lines.forEach(line => {
-            if (line.trim()) {
-                const p = document.createElement('p');
-                p.textContent = line;
-                battleLog.appendChild(p);
-            }
-        });
-        
-        // Keep only the last 2 messages in battle log
-        while (battleLog.children.length > 2) {
-            battleLog.removeChild(battleLog.firstChild);
-        }
-        
-        // Scroll battle log to bottom to show latest messages
-        battleLog.scrollTop = battleLog.scrollHeight;
+        // In battle mode, DON'T show messages immediately - let battle actions show first
+        // Only show battle messages during actual combat turns, not at battle start
         
         // Hide current message container during battle
         document.querySelector('.current-message-container').style.display = 'none';
@@ -374,7 +418,6 @@ function processMessage(message, event) {
         addCurrentMessage(message);
     }
 }
-
 
 // Update the player status display
 function updatePlayerStatus(player) {
@@ -543,19 +586,19 @@ function showBattleInfo(enemy) {
     
     enemyHealthText.textContent = `${enemy.health} HP`;
     
-    // Only clear battle log and add initial message if this is a new battle
-    // Check if battle log is empty or only has the initial "begins" message
-    if (battleLog.children.length === 0) {
-        // Clear any existing content first
-        while (battleLog.firstChild) {
-            battleLog.removeChild(battleLog.firstChild);
-        }
-        
-        // Add initial battle message for new battles
-        const p = document.createElement('p');
-        p.textContent = `⚔️ Battle with ${enemy.name} begins!`;
-        battleLog.appendChild(p);
+    // Clear battle log when battle starts
+    while (battleLog.firstChild) {
+        battleLog.removeChild(battleLog.firstChild);
     }
+    
+    // Debug: Log that we're showing battle info
+    console.log('Showing battle info, options:', gameState.options);
+    
+    // Ensure battle actions are created and shown immediately when battle starts
+    updateBattleActions();
+    
+    // Use the same approach as setBattleActionsEnabled to ensure consistent centering
+    setBattleActionsEnabled(true);
 }
 
 // Hide battle information
@@ -652,51 +695,314 @@ function updateBattleActions() {
 
 // Hide battle actions
 function hideBattleActions() {
-    while (battleActions.firstChild) {
-        battleActions.removeChild(battleActions.firstChild);
+    const battleActions = document.getElementById('battle-actions');
+    const battleLog = document.getElementById('battle-log');
+    
+    if (battleActions) {
+        while (battleActions.firstChild) {
+            battleActions.removeChild(battleActions.firstChild);
+        }
+        battleActions.classList.remove('show');
+    }
+    
+    // Show battle log when hiding actions
+    if (battleLog) {
+        battleLog.style.display = 'block';
     }
 }
 
-// Battle animation state
-let battleAnimating = false;
-
 // Trigger skill animation on specific health bar
-function triggerSkillAnimation(actionText, isPlayerAction = true) {
+function triggerSkillAnimation(actionText, isPlayerAction = true, battleMessage = '') {
     const lowerAction = actionText.toLowerCase();
     let animationClass = '';
     let hpAnimationClass = '';
     let targetElement = null;
+    let actionType = '';
+    
+    // Get current animation speed
+    const currentSpeed = ANIMATION_SPEEDS[currentAnimationSpeed];
+    const healthBarDuration = parseFloat(currentSpeed.iconTime) * 1000;
     
     if (lowerAction.includes('attack') || lowerAction.includes('hit') || lowerAction.includes('strike')) {
         animationClass = 'skill-animation-attack';
         hpAnimationClass = 'hp-animation-attack';
+        actionType = 'attack';
         // Attack animations target the opponent's health bar
         targetElement = isPlayerAction ? document.getElementById('enemy-info') : document.getElementById('player-battle-info');
+        
+        // Trigger screen shake for attacks
+        triggerScreenShake();
+        
+        // Extract damage and determine max health for icon sizing
+        const damage = extractDamageFromMessage(battleMessage);
+        let maxHealth;
+        
+        if (isPlayerAction) {
+            // Player attacking enemy - get enemy max health
+            maxHealth = gameState.enemy && gameState.enemy.name === 'Goblin' ? 3 : 5;
+        } else {
+            // Enemy attacking player - get player max health from current game state
+            maxHealth = document.getElementById('health').textContent.split('/')[1] || 10;
+            maxHealth = parseInt(maxHealth);
+        }
+        
+        // 1. Show action icon (starts immediately) with proportional sizing
+        showActionIcon(targetElement, actionType, damage, maxHealth);
+        
+        // 3. Show damage number when icon is halfway through animation
+        const iconDuration = parseFloat(currentSpeed.iconTime) * 1000;
+        const iconHalfway = iconDuration / 2;
+        setTimeout(() => {
+            if (damage > 0) {
+                showDamageNumber(targetElement, damage, false);
+            }
+        }, iconHalfway);
+        
     } else if (lowerAction.includes('heal') || lowerAction.includes('restore') || lowerAction.includes('recover')) {
         animationClass = 'skill-animation-heal';
         hpAnimationClass = 'hp-animation-heal';
+        actionType = 'heal';
         // Heal animations target the caster's health bar
         targetElement = isPlayerAction ? document.getElementById('player-battle-info') : document.getElementById('enemy-info');
+        
+        // Extract heal amount for icon sizing (heal actions don't scale with damage percentage)
+        const healAmount = extractDamageFromMessage(battleMessage);
+        
+        // 1. Show action icon (starts immediately) - heal icons don't scale with damage
+        showActionIcon(targetElement, actionType);
+        
+        // 3. Show heal number when icon is halfway through animation
+        const iconDuration = parseFloat(currentSpeed.iconTime) * 1000;
+        const iconHalfway = iconDuration / 2;
+        setTimeout(() => {
+            if (healAmount > 0) {
+                showDamageNumber(targetElement, healAmount, true);
+            }
+        }, iconHalfway);
+        
     } else if (lowerAction.includes('defend') || lowerAction.includes('block') || lowerAction.includes('guard')) {
         animationClass = 'skill-animation-defend';
         hpAnimationClass = 'hp-animation-defend';
+        actionType = 'defend';
         // Defend animations target the caster's health bar
         targetElement = isPlayerAction ? document.getElementById('player-battle-info') : document.getElementById('enemy-info');
+        
+        // 1. Show action icon (starts immediately) - defend doesn't have damage numbers
+        showActionIcon(targetElement, actionType);
     }
     
     if (animationClass && targetElement) {
+        // 2. Start health bar flash animation immediately with icon
+        const skillAnimationName = animationClass.replace('skill-animation-', '');
+        const hpAnimationName = hpAnimationClass.replace('hp-animation-', '');
+        
+        // Apply animations with current speed
+        targetElement.style.animation = `${skillAnimationName}-flash ${currentSpeed.iconTime} ease-in-out, ${hpAnimationName}-flash ${currentSpeed.iconTime} ease-in-out`;
         targetElement.classList.add(animationClass, hpAnimationClass);
+        
         setTimeout(() => {
             targetElement.classList.remove(animationClass, hpAnimationClass);
-        }, 1500);
+            targetElement.style.animation = ''; // Clear inline animation
+        }, healthBarDuration);
     }
+    
+    // Return the total animation duration for timing coordination
+    return Math.max(parseFloat(currentSpeed.damageTime) * 1000, parseFloat(currentSpeed.iconTime) * 1000);
+}
+
+// Trigger screen shake effect
+function triggerScreenShake() {
+    const gameContainer = document.querySelector('.game-container');
+    if (gameContainer) {
+        gameContainer.classList.add('screen-shake');
+        setTimeout(() => {
+            gameContainer.classList.remove('screen-shake');
+        }, 500);
+    }
+}
+
+// Show damage number floating up from health bar
+function showDamageNumber(targetElement, damage, isHealing = false) {
+    if (!targetElement || !damage) return;
+    
+    const damageElement = document.createElement('div');
+    damageElement.classList.add('damage-number');
+    damageElement.classList.add(isHealing ? 'heal' : 'damage');
+    damageElement.textContent = isHealing ? `+${damage}` : `-${damage}`;
+    
+    // Apply current animation speed directly to the element
+    const currentSpeed = ANIMATION_SPEEDS[currentAnimationSpeed];
+    const animationName = isHealing ? 'heal-float' : 'damage-float';
+    damageElement.style.animation = `${animationName} ${currentSpeed.damageTime} ease-out forwards`;
+    
+    targetElement.appendChild(damageElement);
+    
+    // Remove the element after animation completes (use longer timeout for slower animations)
+    const timeoutDuration = parseFloat(currentSpeed.damageTime) * 1000;
+    setTimeout(() => {
+        if (damageElement.parentNode) {
+            damageElement.parentNode.removeChild(damageElement);
+        }
+    }, timeoutDuration);
+}
+
+// Show action icon next to battle info with size based on damage percentage
+function showActionIcon(targetElement, actionType, damage = 0, maxHealth = 0) {
+    if (!targetElement) return;
+    
+    // Remove any existing action icons
+    const existingIcon = targetElement.querySelector('.action-icon');
+    if (existingIcon) {
+        existingIcon.remove();
+    }
+    
+    const iconElement = document.createElement('div');
+    iconElement.classList.add('action-icon', actionType);
+    
+    // Calculate damage percentage and add size class
+    if (damage > 0 && maxHealth > 0 && actionType === 'attack') {
+        const damagePercentage = (damage / maxHealth) * 100;
+        let sizeClass = 'size-medium'; // Default
+        
+        // Debug logging
+        console.log(`Icon sizing: damage=${damage}, maxHealth=${maxHealth}, percentage=${damagePercentage.toFixed(1)}%`);
+        
+        if (damagePercentage >= 50) {
+            sizeClass = 'size-huge';
+        } else if (damagePercentage >= 35) {
+            sizeClass = 'size-large';
+        } else if (damagePercentage >= 20) {
+            sizeClass = 'size-medium';
+        } else if (damagePercentage >= 10) {
+            sizeClass = 'size-small';
+        } else {
+            sizeClass = 'size-tiny';
+        }
+        
+        console.log(`Applied size class: ${sizeClass}`);
+        iconElement.classList.add(sizeClass);
+    }
+    
+    // Get random variation for the action type
+    const variations = ICON_VARIATIONS[actionType] || ['⚡'];
+    const randomIcon = variations[Math.floor(Math.random() * variations.length)];
+    iconElement.textContent = randomIcon;
+    
+    // Apply current animation speed directly to the element
+    const currentSpeed = ANIMATION_SPEEDS[currentAnimationSpeed];
+    const animationName = `action-icon-${actionType}`;
+    iconElement.style.animation = `${animationName} ${currentSpeed.iconTime} ease-out forwards`;
+    
+    targetElement.appendChild(iconElement);
+    
+    // Remove the icon after animation completes (use longer timeout for slower animations)
+    const timeoutDuration = parseFloat(currentSpeed.iconTime) * 1000;
+    setTimeout(() => {
+        if (iconElement.parentNode) {
+            iconElement.parentNode.removeChild(iconElement);
+        }
+    }, timeoutDuration);
+}
+
+// Extract damage amount from battle message
+function extractDamageFromMessage(message) {
+    if (!message) return 0;
+    
+    // Look for damage patterns like "2 damage", "takes 3 damage", "deals 1 damage"
+    const damageMatch = message.match(/(?:deals?|takes?|suffers?)\s+(\d+)\s+damage/i) || 
+                       message.match(/(\d+)\s+damage/i);
+    
+    if (damageMatch && damageMatch[1]) {
+        return parseInt(damageMatch[1]);
+    }
+    
+    // Look for healing patterns like "heals 2", "restores 3 health"
+    const healMatch = message.match(/(?:heals?|restores?)\s+(\d+)/i);
+    if (healMatch && healMatch[1]) {
+        return parseInt(healMatch[1]);
+    }
+    
+    return 1; // Default damage/heal amount if we can't parse it
+}
+
+// Toggle animation speed
+function toggleAnimationSpeed() {
+    currentAnimationSpeed = (currentAnimationSpeed + 1) % ANIMATION_SPEEDS.length;
+    updateSpeedIndicator();
+    applyAnimationSpeed();
+}
+
+// Update the speed indicator display
+function updateSpeedIndicator() {
+    if (speedIndicator) {
+        speedIndicator.textContent = ANIMATION_SPEEDS[currentAnimationSpeed].name;
+    }
+}
+
+// Apply the current animation speed to CSS
+function applyAnimationSpeed() {
+    const currentSpeed = ANIMATION_SPEEDS[currentAnimationSpeed];
+    
+    // Create or update the dynamic style element
+    let styleElement = document.getElementById('dynamic-animation-speeds');
+    if (!styleElement) {
+        styleElement = document.createElement('style');
+        styleElement.id = 'dynamic-animation-speeds';
+        document.head.appendChild(styleElement);
+    }
+    
+    // Update CSS with current animation speeds - using more specific selectors
+    styleElement.textContent = `
+        .battle-info .damage-number.damage {
+            animation: damage-float ${currentSpeed.damageTime} ease-out forwards !important;
+        }
+        
+        .battle-info .damage-number.heal {
+            animation: heal-float ${currentSpeed.damageTime} ease-out forwards !important;
+        }
+        
+        .battle-info .action-icon.attack {
+            animation: action-icon-attack ${currentSpeed.iconTime} ease-out forwards !important;
+        }
+        
+        .battle-info .action-icon.defend {
+            animation: action-icon-defend ${currentSpeed.iconTime} ease-out forwards !important;
+        }
+        
+        .battle-info .action-icon.heal {
+            animation: action-icon-heal ${currentSpeed.iconTime} ease-out forwards !important;
+        }
+    `;
+    
+    console.log('Applied animation speed:', currentSpeed.name, 'Damage:', currentSpeed.damageTime, 'Icons:', currentSpeed.iconTime);
 }
 
 // Disable/enable battle actions
 function setBattleActionsEnabled(enabled) {
-    const battleActionsContainer = document.getElementById('battle-actions');
-    if (battleActionsContainer) {
-        battleActionsContainer.style.display = enabled ? 'flex' : 'none';
+    const battleActions = document.getElementById('battle-actions');
+    const battleLog = document.getElementById('battle-log');
+    
+    console.log('setBattleActionsEnabled called with:', enabled);
+    console.log('battleActions element:', battleActions);
+    console.log('battleLog element:', battleLog);
+    
+    if (battleActions && battleLog) {
+        if (enabled) {
+            // Show battle actions using CSS class with !important rules
+            battleActions.classList.add('centered');
+            battleLog.style.display = 'none';
+            console.log('Battle actions should now be visible and centered');
+            console.log('Battle actions has centered class:', battleActions.classList.contains('centered'));
+            console.log('Battle actions computed style:', window.getComputedStyle(battleActions).display);
+            console.log('Battle actions children count:', battleActions.children.length);
+        } else {
+            // Show battle log, hide battle actions
+            battleActions.classList.remove('centered');
+            battleLog.style.display = 'block';
+            console.log('Battle log should now be visible');
+        }
+    } else {
+        console.log('Missing elements - battleActions:', !!battleActions, 'battleLog:', !!battleLog);
     }
 }
 
