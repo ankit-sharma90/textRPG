@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medieval Text RPG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dark-fantasy-theme">
+    <div class="container">
+        <header>
+            <h1>⚔️ Medieval Quest ⚔️</h1>
+        </header>
+        
+        <div class="game-container">
+            <div class="status-bar">
+                <div class="status-item health-status">
+                    <div class="health-bar player-health-bar">
+                        <div class="health-bar-fill" id="player-health-bar"></div>
+                    </div>
+                    <span id="health">10/10</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">⚜️ Gold:</span>
+                    <span id="gold">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">🕐 Time:</span>
+                    <span id="time">Day</span>
+                </div>
+                <div class="status-item" id="vampire-status" style="display: none;">
+                    <span>🧛 Vampire</span>
+                </div>
+                <div class="status-item">
+                    <button id="animation-speed-toggle" class="speed-toggle-button" title="Toggle Animation Speed">
+                        <span id="speed-indicator">⚡ Normal</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="game-content">
+                <!-- Current message section -->
+                <div class="current-message-container">
+                    <div id="current-message" class="message-box">
+                        <p>Welcome to Medieval Quest! Click "Begin Adventure" to start your journey.</p>
+                    </div>
+                </div>
+                
+                <!-- Map viewport section -->
+                <div class="map-container" id="map-container" style="display: none;">
+                    <div class="map-header">
+                        <h3 id="world-name">Earth</h3>
+                        <span id="coordinates">(25, 25)</span>
+                    </div>
+                    <div class="map-viewport" id="map-viewport">
+                        <!-- 5x5 grid will be generated here -->
+                    </div>
+                </div>
+                
+                <!-- Battle section -->
+                <div class="battle-container" id="battle-container" style="display: none;">
+                    <!-- Enemy info -->
+                    <div id="enemy-info" class="battle-info">
+                        <div class="character-portrait enemy">
+                            <span>👹</span>
+                        </div>
+                        <div class="character-info">
+                            <span id="enemy-name" class="enemy-name"></span>
+                            <div class="health-bar enemy-health-bar">
+                                <div class="health-bar-fill" id="enemy-health-bar"></div>
+                            </div>
+                            <span id="enemy-health-text"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Battle log and actions (shared space) -->
+                    <div class="battle-log-container">
+                        <div id="battle-log" class="battle-log">
+                            <p>Battle begins!</p>
+                        </div>
+                        <div class="battle-actions" id="battle-actions">
+                            <!-- Battle action buttons will be added here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Player battle info -->
+                    <div id="player-battle-info" class="battle-info">
+                        <div class="character-portrait player">
+                            <span>🛡️</span>
+                        </div>
+                        <div class="character-info">
+                            <span class="player-name">You</span>
+                            <div class="health-bar player-health-bar">
+                                <div class="health-bar-fill" id="player-battle-health-bar"></div>
+                            </div>
+                            <span id="player-battle-health-text"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="action-buttons-container" id="action-buttons-container">
+                    <div class="action-buttons" id="action-buttons">
+                        <button id="start-button" class="action-button">
+                            <span class="action-key">1</span>
+                            <span class="action-text">⚔️ Begin Adventure</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Compass navigation (initially hidden) -->
+                    <div class="compass-container" id="compass-container" style="display: none;">
+                        <button class="compass-button north" id="compass-north">
+                            <span class="action-key">1</span>
+                            <span class="direction-arrow">⬆️</span>
+                            <span class="direction-text">Journey North</span>
+                        </button>
+                        <button class="compass-button east" id="compass-east">
+                            <span class="action-key">2</span>
+                            <span class="direction-arrow">➡️</span>
+                            <span class="direction-text">Journey East</span>
+                        </button>
+                        <button class="compass-button south" id="compass-south">
+                            <span class="action-key">3</span>
+                            <span class="direction-arrow">⬇️</span>
+                            <span class="direction-text">Journey South</span>
+                        </button>
+                        <button class="compass-button west" id="compass-west">
+                            <span class="action-key">4</span>
+                            <span class="direction-arrow">⬅️</span>
+                            <span class="direction-text">Journey West</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>🏰 Medieval Quest RPG 🏰</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>
