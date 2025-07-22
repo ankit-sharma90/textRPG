@@ -39,9 +39,12 @@ def start_game():
     games[session_id] = GameManager()
     game = games[session_id]
     
+    # Get initial location description
+    location_desc = game.world.get_location_description(game.world.get_current_cell())
+    
     # Return initial game state
     return jsonify({
-        'message': 'Welcome to Text RPG!',
+        'message': f'Welcome to Text RPG!\\n\\nAn old man approaches you with a stick and 10 gold coins.\\n"Take these, young traveler. You\'ll need them on your journey."\\n\\n{location_desc}',
         'player': {
             'health': game.player.health,
             'max_health': game.player.max_health,
@@ -72,11 +75,14 @@ def take_action():
     
     # Handle first encounter
     if event == 'first_encounter':
+        # Get available directions with hints for map navigation
+        map_options = game.world.get_directional_options_with_hints()
+        
         if choice == 1:  # Reject
             response = {
                 'message': 'You reject the offering and move on. The old man looks disappointed as you walk away.',
                 'event': 'map',
-                'options': ['Move North', 'Move East', 'Move South', 'Move West']
+                'options': map_options
             }
         elif choice == 2:  # Take and move on
             game.player.add_gold(10)
@@ -85,7 +91,7 @@ def take_action():
             response = {
                 'message': 'You accept the offering and thank the old man. The old man smiles and wishes you good luck on your journey.',
                 'event': 'map',
-                'options': ['Move North', 'Move East', 'Move South', 'Move West']
+                'options': map_options
             }
         elif choice == 3:  # Take and fight
             game.player.add_gold(10)
@@ -105,27 +111,67 @@ def take_action():
     elif event == 'map':
         # All directional movements (1-4) are handled the same way
         if choice >= 1 and choice <= 4:
-            directions = ['North', 'East', 'South', 'West']
+            directions = ['north', 'east', 'south', 'west']
             direction = directions[choice - 1]
             
-            game.action_taken()
-            # 70% chance of battle
-            import random
-            if random.random() < 0.7:
-                response = {
-                    'message': f'You move {direction} and encounter a Goblin!',
-                    'event': 'battle',
-                    'enemy': {
-                        'name': 'Goblin',
-                        'health': 3
-                    },
-                    'options': ['Attack', 'Defend', 'Flee']
-                }
+            # Try to move in the world map
+            success, message = game.world.move_player(direction)
+            
+            if success:
+                game.action_taken()
+                
+                # Check what's at the new location
+                cell_content = game.world.get_current_cell()
+                
+                # Import the enum types we need
+                from game.world import CellType, MajorEventType
+                
+                if cell_content == CellType.ENEMY:
+                    response = {
+                        'message': f'{message}\\nYou encounter a Goblin!',
+                        'event': 'battle',
+                        'enemy': {
+                            'name': 'Goblin',
+                            'health': 3
+                        },
+                        'options': ['Attack', 'Defend', 'Flee']
+                    }
+                else:
+                    # Check if there are location-specific actions available
+                    cell_content = game.world.get_current_cell()
+                    location_actions = game.world.get_location_actions(cell_content)
+                    
+                    # Get available directions with hints for next move
+                    movement_options = game.world.get_directional_options_with_hints()
+                    
+                    # If there are special actions, show location event
+                    if cell_content != CellType.EMPTY:
+                        # Get the correct location type string
+                        if hasattr(cell_content, 'value'):
+                            location_type = cell_content.value
+                        else:
+                            location_type = str(cell_content).split('.')[-1].lower()
+                        
+                        response = {
+                            'message': message,
+                            'event': 'location',
+                            'location_type': location_type,
+                            'options': location_actions + ['Continue exploring']
+                        }
+                    else:
+                        response = {
+                            'message': message,
+                            'event': 'map',
+                            'options': movement_options
+                        }
             else:
+                # Movement failed (hit boundary)
+                movement_options = game.world.get_directional_options_with_hints()
+                
                 response = {
-                    'message': f'You move {direction} but find nothing of interest.',
+                    'message': message,
                     'event': 'map',
-                    'options': ['Move North', 'Move East', 'Move South', 'Move West']
+                    'options': movement_options
                 }
     
     # Handle battle actions
@@ -224,6 +270,58 @@ def take_action():
                         },
                         'options': ['Attack', 'Defend', 'Flee']
                     }
+    
+    # Handle location interactions
+    elif event == 'location':
+        location_type = data.get('location_type')
+        
+        if choice <= 3:  # Location-specific actions
+            # Handle the interaction
+            old_gold = game.player.gold
+            old_health = game.player.health
+            
+            # Call the interaction method with the choice
+            interaction_result = game.handle_location_interaction(choice)
+            
+            # Check if this triggers a battle
+            battle_triggers = {
+                'enemy': (choice == 1),
+                'dragon': (choice == 1 or (choice == 2 and 'failed' in interaction_result) or (choice == 3 and 'inevitable' in interaction_result)),
+                'boss_enemy': (choice == 1 or (choice == 3 and 'failed' in interaction_result))
+            }
+            
+            if location_type in battle_triggers and battle_triggers[location_type]:
+                enemy_stats = {
+                    'enemy': {'name': 'Goblin', 'health': 3},
+                    'dragon': {'name': 'Ancient Dragon', 'health': 15},
+                    'boss_enemy': {'name': 'Boss Monster', 'health': 10}
+                }
+                
+                response = {
+                    'message': interaction_result,
+                    'event': 'battle',
+                    'enemy': enemy_stats.get(location_type, {'name': 'Enemy', 'health': 5}),
+                    'options': ['Attack', 'Defend', 'Flee']
+                }
+            else:
+                # Get available directions with hints for next move
+                movement_options = game.world.get_directional_options_with_hints()
+                
+                response = {
+                    'message': interaction_result,
+                    'event': 'map',
+                    'options': movement_options
+                }
+            
+        elif choice == 4:  # Continue exploring
+            # Get available directions with hints for next move
+            movement_options = game.world.get_directional_options_with_hints()
+            
+            response = {
+                'message': 'You decide to continue exploring.',
+                'event': 'map',
+                'options': movement_options
+            }
     
     # Handle death
     elif event == 'death':
